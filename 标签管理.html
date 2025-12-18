@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>标签管理 - 数据要素运营管理平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        /* Directory Tree Styles */
+        .tree-node .node-actions { display: none; }
+        .tree-node:hover .node-actions { display: flex; }
+        .tree-node.active { background-color: #e0f2fe; color: #0284c7; position: relative; }
+        .tree-node.active::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 3px; background-color: #0284c7; }
+        
+        /* Drag & Drop Visuals */
+        .tree-node.dragging { opacity: 0.5; background-color: #f1f5f9; border: 1px dashed #94a3b8; }
+        .tree-node.drag-over { background-color: #dbeafe; border: 2px dashed #3b82f6; }
+        
+        .input-error { border-color: #ef4444 !important; background-color: #fef2f2; }
+        .custom-select { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col font-sans text-gray-800 text-[13px]">
+
+    <!-- Header -->
+    <header class="h-14 bg-blue-600 text-white flex items-center justify-between px-4 shadow-md flex-shrink-0 z-20">
+        <div class="flex items-center gap-3">
+            <!-- <div class="text-2xl"><i class="ph-fill ph-tag"></i></div>
+            <div class="flex flex-col">
+                <h1 class="text-sm font-bold tracking-wide">数据要素运营管理平台</h1>
+                <span class="text-[10px] opacity-80">标签管理中心</span>
+            </div> -->
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 pl-4 border-l border-blue-400">
+                <div class="w-7 h-7 bg-blue-800 rounded-full flex items-center justify-center text-xs border border-blue-400">超</div>
+                <span class="text-xs">超级管理员</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- Module 1: Sidebar -->
+        <aside class="w-[280px] bg-white border-r border-gray-200 flex flex-col flex-shrink-0 z-10 select-none relative">
+            
+            <!-- Create Button -->
+            <div class="p-3 border-b border-gray-100 flex-shrink-0">
+                <button onclick="openModal('createTypeModal')" class="w-full py-1.5 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm text-sm">
+                    <i class="ph-bold ph-plus"></i> 新建标签
+                </button>
+            </div>
+
+            <!-- Sidebar Search & Toolbar -->
+            <div class="px-3 py-2 bg-gray-50 border-b border-gray-100 flex flex-col gap-2 flex-shrink-0">
+                <div class="flex gap-1">
+                    <input type="text" id="sidebarSearchInput" placeholder="搜索目录名称" 
+                        class="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:border-blue-500 outline-none transition">
+                    <button onclick="searchSidebar()" class="px-2 py-1 bg-blue-50 border border-blue-200 text-blue-600 rounded text-xs hover:bg-blue-100 transition">搜索</button>
+                    <button onclick="resetSidebar()" class="px-2 py-1 bg-white border border-gray-300 text-gray-600 rounded text-xs hover:bg-gray-50 transition">重置</button>
+                </div>
+                <div class="flex justify-between items-center text-xs text-gray-500">
+                    <span class="font-bold">标签目录</span>
+                    <div class="flex gap-1">
+                        <button onclick="handleAddDir(null, 'root')" class="p-1 hover:text-blue-600 hover:bg-blue-50 rounded transition" title="新建根目录"><i class="ph-bold ph-plus"></i></button>
+                        <div class="w-[1px] h-3 bg-gray-300 my-auto mx-0.5"></div>
+                        <button onclick="expandAllDirs()" class="p-1 hover:text-blue-600 hover:bg-gray-200 rounded transition" title="全部展开"><i class="ph-bold ph-arrows-out-line-vertical"></i></button>
+                        <button onclick="collapseAllDirs()" class="p-1 hover:text-blue-600 hover:bg-gray-200 rounded transition" title="全部收起"><i class="ph-bold ph-arrows-in-line-vertical"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tree List -->
+            <div class="flex-1 overflow-y-auto py-2" id="directoryTree" ondragover="event.preventDefault()">
+                <!-- Dynamic Content -->
+            </div>
+
+            <!-- Fixed Unclassified Node -->
+            <div class="border-t border-gray-200 mt-auto bg-gray-50/50 flex-shrink-0">
+                <div id="unclassifiedNode" class="tree-node px-3 py-2.5 flex items-center justify-between text-gray-600 hover:bg-gray-100 cursor-pointer transition-colors" onclick="selectDir(999)">
+                    <div class="flex items-center gap-2 pl-2">
+                        <i class="ph-fill ph-folder-notch text-gray-400"></i>
+                        <span class="text-xs font-medium">未分类</span>
+                    </div>
+                    <span class="text-[10px] bg-gray-200 px-1.5 rounded-full text-gray-500">24</span>
+                </div>
+            </div>
+            
+            <!-- Resize Handle -->
+            <div class="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400/50 transition z-20"></div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col min-w-0 bg-white">
+            
+            <!-- Module 2: Filter Section -->
+            <div class="px-5 py-4 border-b border-gray-100 bg-white flex-shrink-0">
+                <div class="grid grid-cols-4 gap-4 mb-3">
+                    <div class="relative col-span-1">
+                        <input type="text" id="filterName" placeholder="请输入标签ID或名称" 
+                            class="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition">
+                        <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <div class="col-span-1">
+                        <input type="text" id="filterCreator" placeholder="请输入创建人账号" 
+                            class="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition">
+                    </div>
+                    <div class="col-span-1">
+                        <select id="filterMethod" class="w-full px-3 py-1.5 border border-gray-300 rounded text-sm custom-select focus:border-blue-500 outline-none cursor-pointer">
+                            <option value="">全部创建方式</option>
+                            <option value="规则标签">规则标签</option>
+                            <option value="首末次标签">首末次标签</option>
+                            <option value="统计标签">统计标签</option>
+                        </select>
+                    </div>
+                    <div class="col-span-1">
+                        <select id="filterStatus" class="w-full px-3 py-1.5 border border-gray-300 rounded text-sm custom-select focus:border-blue-500 outline-none cursor-pointer">
+                            <option value="">全部状态</option>
+                            <option value="待发布">待发布</option>
+                            <option value="已发布">已发布</option>
+                            <option value="已下架">已下架</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Manual Action Buttons -->
+                <div class="flex justify-end gap-2">
+                    <button onclick="resetTableFilter()" class="px-4 py-1.5 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 transition">重置</button>
+                    <button onclick="renderTable()" class="px-4 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 shadow-sm transition">查询</button>
+                </div>
+            </div>
+
+            <!-- Module 3: Data Table -->
+            <div class="flex-1 overflow-auto bg-white relative">
+                <table class="w-full text-left border-collapse min-w-[1400px]">
+                    <thead class="bg-gray-50 text-gray-500 font-medium border-b border-gray-200 sticky top-0 z-10 text-xs">
+                        <tr>
+                            <th class="px-4 py-3 w-[120px]">标签ID</th>
+                            <th class="px-4 py-3 min-w-[150px]">标签名称</th>
+                            <th class="px-4 py-3 w-[150px]">标签目录</th>
+                            <th class="px-4 py-3 w-[100px]">创建方式</th>
+                            <th class="px-4 py-3 w-[100px]">标签类型</th>
+                            <th class="px-4 py-3 w-[100px]">标签状态</th>
+                            <th class="px-4 py-3 w-[100px]">数据类型</th>
+                            <th class="px-4 py-3 min-w-[200px]">备注</th>
+                            <th class="px-4 py-3 w-[140px] cursor-pointer hover:bg-gray-100 group">
+                                更新时间 <i class="ph-fill ph-caret-down inline-block text-[10px] text-gray-400 group-hover:text-blue-600"></i>
+                            </th>
+                            <th class="px-4 py-3 w-[80px] text-center">引用</th>
+                            <th class="px-4 py-3 w-[100px]">创建人</th>
+                            <th class="px-4 py-3 w-[140px] cursor-pointer hover:bg-gray-100 group">
+                                创建时间 <i class="ph-fill ph-caret-down inline-block text-[10px] text-gray-400 group-hover:text-blue-600"></i>
+                            </th>
+                            <th class="px-4 py-3 w-[200px] text-left sticky right-0 bg-gray-50 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)] z-20">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-gray-100 text-gray-700">
+                        <!-- JS Render -->
+                    </tbody>
+                </table>
+                <div id="emptyState" class="hidden flex-col items-center justify-center py-24 text-gray-400">
+                    <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-3"><i class="ph-duotone ph-tag text-3xl text-gray-300"></i></div>
+                    <p class="text-sm">暂无标签数据</p>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="px-5 py-2 border-t border-gray-200 flex items-center justify-end gap-3 text-xs text-gray-600 bg-white flex-shrink-0">
+                <span class="text-gray-400">共 126 条</span>
+                <select class="border border-gray-300 rounded px-1 py-0.5 outline-none hover:border-blue-500"><option>30条/页</option></select>
+                <div class="flex items-center gap-1">
+                    <button class="w-6 h-6 border rounded" disabled><</button>
+                    <button class="w-6 h-6 bg-blue-600 text-white rounded">1</button>
+                    <button class="w-6 h-6 border rounded hover:border-blue-500">></button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create Type Modal (Updated with Navigation) -->
+    <div id="createTypeModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-[2px]" onclick="closeModal('createTypeModal')"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] bg-white rounded-xl shadow-2xl p-8">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-xl font-bold text-gray-800">请选择新建标签类型</h3>
+                <button onclick="closeModal('createTypeModal')"><i class="ph-bold ph-x text-xl text-gray-400 hover:text-gray-700"></i></button>
+            </div>
+            <div class="grid grid-cols-3 gap-6">
+                <!-- 1. 规则标签跳转 -->
+                <div onclick="window.location.href='新增规则标签.html'" class="border border-gray-200 rounded-xl p-6 cursor-pointer hover:border-blue-500 hover:shadow-lg transition group">
+                    <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 mb-5 group-hover:bg-blue-600 group-hover:text-white transition"><i class="ph-bold ph-faders text-2xl"></i></div>
+                    <h4 class="text-base font-bold text-gray-800 mb-2">规则标签</h4>
+                    <p class="text-xs text-gray-500 leading-relaxed h-12">使用基础数据对象中的明细数据，通过逻辑运算符（且、或）组合筛选，定义满足特定业务条件的标签。</p>
+                </div>
+                <!-- 2. 首末次标签跳转 -->
+                <div onclick="window.location.href='新增首末次标签.html'" class="border border-gray-200 rounded-xl p-6 cursor-pointer hover:border-purple-500 hover:shadow-lg transition group">
+                    <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center text-purple-600 mb-5 group-hover:bg-purple-600 group-hover:text-white transition"><i class="ph-bold ph-calendar-check text-2xl"></i></div>
+                    <h4 class="text-base font-bold text-gray-800 mb-2">首末次标签</h4>
+                    <p class="text-xs text-gray-500 leading-relaxed h-12">提取用户在特定时间范围内，首次或最后一次完成某事件的时间、地点或属性值作为标签。</p>
+                </div>
+                <!-- 3. 统计标签跳转 -->
+                <div onclick="window.location.href='新增同级标签.html'" class="border border-gray-200 rounded-xl p-6 cursor-pointer hover:border-green-500 hover:shadow-lg transition group">
+                    <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center text-green-600 mb-5 group-hover:bg-green-600 group-hover:text-white transition"><i class="ph-bold ph-chart-bar text-2xl"></i></div>
+                    <h4 class="text-base font-bold text-gray-800 mb-2">统计标签</h4>
+                    <p class="text-xs text-gray-500 leading-relaxed h-12">对事件数据进行聚合统计，如求和、计数、平均值等（例如：近30天消费总金额）。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 2. 二次确认弹窗 (PRD 6.3) -->
+    <div id="confirmModal" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 bg-gray-900/20" onclick="closeModal('confirmModal')"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] bg-white rounded-lg shadow-xl p-6">
+            <div class="flex items-start gap-4">
+                <div class="bg-yellow-100 p-2.5 rounded-full flex-shrink-0" id="confirmIconBg">
+                    <i class="ph-fill ph-warning text-yellow-600 text-xl" id="confirmIcon"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-800 text-base" id="confirmTitle">操作确认</h4>
+                    <p class="text-sm text-gray-500 mt-2 leading-relaxed" id="confirmText">内容...</p>
+                </div>
+            </div>
+            <div class="mt-8 flex justify-end gap-3">
+                <button onclick="closeModal('confirmModal')" class="px-4 py-1.5 border border-gray-300 rounded text-gray-600 hover:bg-gray-50 text-xs transition">取消</button>
+                <button id="confirmBtn" class="px-4 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 shadow-sm text-xs transition">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 引用详情弹窗 (PRD 4.3) -->
+    <div id="refModal" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 bg-gray-900/20" onclick="closeModal('refModal')"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] bg-white rounded-lg shadow-xl flex flex-col max-h-[500px]">
+            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+                <h3 class="font-bold text-gray-800 text-base">标签引用详情</h3>
+                <button onclick="closeModal('refModal')" class="text-gray-400 hover:text-gray-700"><i class="ph-bold ph-x text-lg"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-6">
+                <!-- Group 1 -->
+                <div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="w-1 h-3 bg-blue-600 rounded-full"></span>
+                        <h4 class="text-xs font-bold text-gray-700">客户应用配置 (2)</h4>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded border border-gray-100">
+                            <span class="text-sm text-blue-700 font-bold hover:underline cursor-pointer">电子票夹小程序</span>
+                            <span class="text-xs text-green-500 border bg-green-50 px-1.5 py-0.5 rounded">已发布</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded border border-gray-100">
+                            <span class="text-sm text-blue-700 font-bold hover:underline cursor-pointer">暖哇保险营销</span>
+                            <span class="text-xs text-red-500  border border-red-200 px-1.5 py-0.5 rounded">已下架</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Group 2 -->
+                <div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="w-1 h-3 bg-purple-600 rounded-full"></span>
+                        <h4 class="text-xs font-bold text-gray-700">组合标签引用 (1)</h4>
+                    </div>
+                    <div class="p-3 bg-blue-50/50 rounded border border-blue-100 flex items-center justify-between">
+                        <div class="flex flex-col">
+                            <span class="text-sm text-blue-700 font-bold hover:underline cursor-pointer">高价值用户分群</span>
+                            <span class="text-[10px] text-blue-400 mt-1">高价值用户、中价值用户</span>
+                        </div>
+                        <i class="ph-bold ph-arrow-right text-blue-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 bg-gray-800/90 text-white px-5 py-2.5 rounded shadow-xl transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none z-[80] flex items-center gap-2.5">
+        <i id="toastIcon" class="ph-fill ph-check-circle text-lg text-green-400"></i><span id="toastMsg" class="text-sm font-medium">操作成功</span>
+    </div> 
+
+    <script>
+        // ================= 数据源 =================
+        // children: 嵌套结构
+        let directories = [
+            { id: 1, name: '系统标签', count: 32, expand: true, children: [
+                { id: 11, name: '基础属性', count: 12, children: [] },
+                { id: 12, name: '行为偏好', count: 15, children: [] },
+                { id: 13, name: '交易特征', count: 5, children: [] }
+            ]},
+            { id: 2, name: '营销标签', count: 8, expand: false, children: [
+                 { id: 21, name: '活动偏好', count: 8, children: [] }
+            ]}
+        ];
+
+        let tags = [
+            { id: 'tag_001', name: '用户性别_Gender', dirId: 11, dirPath: '系统标签/基础属性', method: '规则标签', type: '原子标签', status: '已发布', dataType: '文本型', note: '基于身份证解析', updateTime: '2025-11-28 10:00', refCount: 5, creator: 'admin' ,createTime: '2025-11-01 14:00:00', isNoteExpanded: false },
+            { id: 'tag_002', name: '近30天消费总额', dirId: 13, dirPath: '系统标签/交易特征', method: '统计标签', type: '原子标签', status: '待发布', dataType: '数值型', note: '是一段非常长的备注，用于测试换行和展开功能。用户在过去30天内所有支付成功的订单金额总和，不包含退款金额。', updateTime: '2025-11-28 09:30:00', refCount: 0, creator: 'zhangsan' ,createTime: '2025-11-01 14:00:00', isNoteExpanded: false },
+            { id: 'tag_003', name: '首次登录时间', dirId: 999, dirPath: '未分类', method: '首末次标签', type: '原子标签', status: '已下架', dataType: '日期时间型', note: '--', updateTime: '2025-11-25 14:00:00', refCount: 1, creator: 'admin' ,createTime: '2025-11-01 14:00:00', isNoteExpanded: false },
+            // 添加一个测试递归筛选的数据
+            { id: 'tag_004', name: '偏好品类', dirId: 21, dirPath: '营销标签/活动偏好', method: '规则标签', type: '原子标签', status: '已发布', dataType: '文本型', note: '', updateTime: '2025-11-25 14:00:00', refCount: 0, creator: 'admin' ,createTime: '2025-11-01 14:00:00', isNoteExpanded: false }
+        ];
+
+        let state = {
+            currentDirId: null,
+            editingDirId: null,
+            draggedNodeId: null,
+            sidebarSearch: ''
+        };
+
+        // ================= 侧边栏逻辑 =================
+        
+        function renderDirectory() {
+            const container = document.getElementById('directoryTree');
+            // 过滤逻辑 (搜索目录)
+            const listToRender = state.sidebarSearch 
+                ? filterDirs(directories, state.sidebarSearch) 
+                : directories;
+
+            if (listToRender.length === 0) {
+                // 问题 2 修复：侧边栏空状态
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+                        <i class="ph-duotone ph-folder-dashed text-3xl mb-2"></i>
+                        <span class="text-xs">暂无相关目录</span>
+                        ${!state.sidebarSearch ? `<button onclick="handleAddDir(null, 'root')" class="mt-2 text-blue-600 hover:underline text-xs">新建目录</button>` : ''}
+                    </div>
+                `;
+            } else {
+                container.innerHTML = listToRender.map(dir => buildNodeHtml(dir, 0)).join('');
+            }
+            
+            
+            // 未分类选中样式修复
+            const unclassified = document.getElementById('unclassifiedNode');
+            if (state.currentDirId === 999) {
+                unclassified.classList.add('bg-blue-50', 'text-blue-600', 'active', 'border-r-[3px]', 'border-blue-600');
+                unclassified.classList.remove('text-gray-600', 'hover:bg-gray-100');
+            } else {
+                unclassified.classList.remove('bg-blue-50', 'text-blue-600', 'active', 'border-r-[3px]', 'border-blue-600');
+                unclassified.classList.add('text-gray-600', 'hover:bg-gray-100');
+            }
+        }
+
+        // 递归搜索目录
+        function filterDirs(list, keyword) {
+            // 深拷贝避免影响原数据结构显示
+            let res = [];
+            list.forEach(item => {
+                const match = item.name.toLowerCase().includes(keyword.toLowerCase());
+                const childrenMatch = item.children ? filterDirs(item.children, keyword) : [];
+                
+                if (match || childrenMatch.length > 0) {
+                    // 如果匹配，必须展开
+                    let newItem = { ...item, children: childrenMatch, expand: true };
+                    res.push(newItem);
+                }
+            });
+            return res;
+        }
+
+        function buildNodeHtml(node, level) {
+            const padding = level * 16 + 12;
+            const isActive = node.id === state.currentDirId ? 'active' : '';
+            const isEditing = node.id === state.editingDirId;
+
+            if (isEditing) {
+                return `
+                    <div class="px-2 py-1 bg-blue-50/50 border-l-2 border-blue-500 my-0.5 mx-2 rounded-r">
+                        <div class="flex items-center gap-1">
+                            <input type="text" id="editInput_${node.id}" value="${node.name === '新建目录' ? '' : node.name}" 
+                                class="w-full text-xs border border-blue-300 rounded px-1.5 py-1 focus:ring-2 focus:ring-blue-200 outline-none" placeholder="汉字/字母/数字 (15字)"
+                                maxlength="15" onkeydown="if(event.key==='Enter') saveDir(${node.id})">
+                            <button onmousedown="saveDir(${node.id})" class="text-green-600 hover:bg-green-100 p-0.5 rounded"><i class="ph-bold ph-check"></i></button>
+                            <button onmousedown="cancelEditDir(${node.id})" class="text-red-500 hover:bg-red-100 p-0.5 rounded"><i class="ph-bold ph-x"></i></button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const arrowIcon = node.children && node.children.length > 0 ? (node.expand ? 'ph-caret-down' : 'ph-caret-right') : 'ph-dot'; 
+            const arrowAction = (node.children && node.children.length > 0) ? `onclick="toggleExpand(event, ${node.id})"` : '';
+            
+            let childrenHtml = '';
+            if (node.expand && node.children) childrenHtml = node.children.map(child => buildNodeHtml(child, level + 1)).join('');
+
+            const menuHtml = `
+                <div class="node-actions absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow-md border border-gray-100 rounded px-1 py-0.5 gap-0.5 z-10">
+                    <button onclick="handleAddDir(${node.id}, 'child')" title="新增下级" class="hover:bg-blue-50 hover:text-blue-600 p-1 rounded"><i class="ph-bold ph-arrow-elbow-down-right"></i></button>
+                    <button onclick="handleAddDir(${node.id}, 'sibling')" title="新增同级" class="hover:bg-blue-50 hover:text-blue-600 p-1 rounded"><i class="ph-bold ph-list-plus"></i></button>
+                    <button onclick="handleRenameDir(${node.id})" title="重命名" class="hover:bg-blue-50 hover:text-blue-600 p-1 rounded"><i class="ph-bold ph-pencil-simple"></i></button>
+                    <button onclick="handleDeleteDir(${node.id})" title="删除" class="hover:bg-red-50 hover:text-red-600 p-1 rounded"><i class="ph-bold ph-trash"></i></button>
+                </div>
+            `;
+
+            return `
+                <div class="relative group" draggable="true" ondragstart="handleDragStart(event, ${node.id})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${node.id})" ondragenter="this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">
+                    <div class="tree-node flex items-center justify-between py-1.5 pr-3 text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors ${isActive}"
+                         style="padding-left: ${padding}px" onclick="selectDir(${node.id})">
+                        <div class="flex items-center gap-1.5 overflow-hidden">
+                            <i class="ph-bold ${arrowIcon} text-gray-400 text-xs p-0.5" ${arrowAction}></i>
+                            <i class="ph-fill ph-folder text-yellow-400 text-base flex-shrink-0"></i>
+                            <span class="truncate text-xs font-medium select-none">${node.name}</span>
+                        </div>
+                        <span class="text-[10px] text-gray-400 font-mono group-hover:hidden">${node.count}</span>
+                        ${menuHtml}
+                    </div>
+                    ${childrenHtml}
+                </div>
+            `;
+        }
+
+        // --- 目录工具栏逻辑 ---
+        function searchSidebar() {
+            state.sidebarSearch = document.getElementById('sidebarSearchInput').value.trim();
+            renderDirectory();
+        }
+        function resetSidebar() {
+            document.getElementById('sidebarSearchInput').value = '';
+            state.sidebarSearch = '';
+            renderDirectory();
+        }
+        function expandAllDirs() { toggleAll(directories, true); renderDirectory(); }
+        function collapseAllDirs() { toggleAll(directories, false); renderDirectory(); }
+        function toggleAll(list, expand) { list.forEach(d => { if (d.children) { d.expand = expand; toggleAll(d.children, expand); } }); }
+
+        // --- 核心：递归获取所有子孙ID (实现需求：选中父级包含子级) ---
+        function getAllDescendantIds(list, targetId) {
+            let ids = [];
+            // 1. 找到目标节点
+            const target = findNode(list, targetId);
+            if (!target) return [];
+
+            // 2. 递归收集
+            function collect(node) {
+                ids.push(node.id);
+                if (node.children && node.children.length > 0) {
+                    node.children.forEach(child => collect(child));
+                }
+            }
+            collect(target);
+            return ids;
+        }
+
+        // --- 表格逻辑 (整合递归筛选) ---
+        let debounceTimer;
+        function debounceRender() { clearTimeout(debounceTimer); debounceTimer = setTimeout(renderTable, 300); }
+
+
+        function renderTable() {
+            const keyword = document.getElementById('filterName').value.toLowerCase();
+            const method = document.getElementById('filterMethod').value;
+            const status = document.getElementById('filterStatus').value;
+            const tbody = document.getElementById('tableBody');
+
+            // 1. 获取当前需要展示的目录ID集合
+            let allowedDirIds = [];
+            if (state.currentDirId === 999) {
+                allowedDirIds = [999];
+            } else if (state.currentDirId) {
+                allowedDirIds = getAllDescendantIds(directories, state.currentDirId);
+            }
+
+            // 2. 过滤
+            const data = tags.filter(t => {
+                // 目录过滤 (递归)
+                if (state.currentDirId && !allowedDirIds.includes(t.dirId)) return false;
+
+                // 字段过滤
+                if (keyword && !t.name.toLowerCase().includes(keyword) && !t.id.toLowerCase().includes(keyword)) return false;
+                if (method && t.method !== method) return false;
+                if (status && t.status !== status) return false;
+                return true;
+            });
+
+            const empty = document.getElementById('emptyState');
+
+            if (data.length === 0) {
+                tbody.innerHTML = '';
+                empty.classList.remove('hidden'); empty.classList.add('flex');
+            } else {
+                empty.classList.add('hidden'); empty.classList.remove('flex');
+                tbody.innerHTML = data.map(row => buildRow(row)).join('');
+            }
+        }
+        
+        function resetTableFilter() {
+            document.getElementById('filterName').value = '';
+            document.getElementById('filterCreator').value = '';
+            document.getElementById('filterMethod').value = '';
+            document.getElementById('filterStatus').value = '';
+            renderTable();
+        }
+
+        // ================= 操作处理 =================
+        function handleDeleteTag(name, ref) {
+            // PRD 4.4 EC-04: 引用 > 0 直接报错
+            if (ref > 0) return showToast('当前标签正在被引用，无法删除', 'error');
+            confirmAction('deleteTag', name, () => showToast('标签已删除'));
+        }
+
+        function handleOfflineTag(name, ref) {
+            // PRD 4.4 EC-05: 引用 > 0 警告文案
+            const warn = ref > 0 ? ` 该标签涉及 ${ref} 个业务引用，下架可能导致业务中断！` : '';
+            confirmAction('offline', name, () => showToast('标签已下架'), warn);
+        }
+
+        function confirmAction(type, name, callback, extraWarning = '') {
+            openModal('confirmModal');
+            const title = document.getElementById('confirmTitle');
+            const text = document.getElementById('confirmText');
+            const btn = document.getElementById('confirmBtn');
+            const iconBg = document.getElementById('confirmIconBg');
+            const icon = document.getElementById('confirmIcon');
+
+            if (type === 'deleteDir' || type === 'deleteTag') {
+                title.innerText = type === 'deleteDir' ? '删除目录' : '删除标签';
+                text.innerHTML = `确认删除 "${name}" 吗？<br>此操作无法恢复，请谨慎操作。`;
+                btn.className = 'px-4 py-1.5 bg-red-600 text-white rounded hover:bg-red-700 shadow-sm text-xs transition';
+                btn.innerText = '确认删除';
+                iconBg.className = 'bg-red-100 p-2.5 rounded-full flex-shrink-0';
+                icon.className = 'ph-fill ph-trash text-red-600 text-xl';
+            } else {
+                title.innerText = '下架标签';
+                text.innerHTML = `确认下架 "${name}" 吗？<br><span class="text-red-500 font-bold">${extraWarning}</span>`;
+                btn.className = 'px-4 py-1.5 bg-yellow-500 text-white rounded hover:bg-yellow-600 shadow-sm text-xs transition';
+                btn.innerText = '确认下架';
+                iconBg.className = 'bg-yellow-100 p-2.5 rounded-full flex-shrink-0';
+                icon.className = 'ph-fill ph-warning text-yellow-600 text-xl';
+            }
+            btn.onclick = () => { closeModal('confirmModal'); callback(); };
+        }
+
+        // --- 其他辅助逻辑 (拖拽、增删改等保持逻辑一致) ---
+        function findNode(list, id) {
+            for(let n of list) { if(n.id===id) return n; if(n.children) { const r = findNode(n.children, id); if(r) return r; } }
+            return null;
+        }
+        function findParent(list, childId) {
+            for(let n of list) {
+                if (n.children && n.children.some(c => c.id === childId)) return n;
+                if (n.children) { const r = findParent(n.children, childId); if(r) return r; }
+            }
+            return null;
+        }
+        function deleteNode(list, id) {
+            for(let i=0; i<list.length; i++) {
+                if(list[i].id===id) { list.splice(i,1); return; }
+                if(list[i].children) deleteNode(list[i].children, id);
+            }
+        }
+        function selectDir(id) { 
+            state.currentDirId = state.currentDirId === id ? null : id; 
+            renderDirectory(); renderTable(); 
+        }
+        function toggleExpand(e, id) { e.stopPropagation(); const n = findNode(directories, id); if(n) { n.expand = !n.expand; renderDirectory(); } }
+        
+        function handleAddDir(refId, type) {
+            event.stopPropagation();
+            const newId = Date.now();
+            const newNode = { id: newId, name: '新建目录', count: 0, children: [] };
+            
+            if (type === 'root') {
+                directories.push(newNode);
+            } else if (type === 'child') {
+                const parent = findNode(directories, refId);
+                if (!parent.children) parent.children = [];
+                parent.children.push(newNode);
+                parent.expand = true;
+            } else if (type === 'sibling') {
+                const parent = findParent(directories, refId);
+                if (parent) parent.children.push(newNode); else directories.push(newNode);
+            }
+            state.editingDirId = newId;
+            renderDirectory();
+            setTimeout(() => document.getElementById(`editInput_${newId}`).focus(), 50);
+        }
+        
+        function handleRenameDir(id) {
+            event.stopPropagation(); state.editingDirId = id; renderDirectory();
+            setTimeout(() => { const el = document.getElementById(`editInput_${id}`); el.focus(); el.select(); }, 50);
+        }
+        function saveDir(id) {
+            const val = document.getElementById(`editInput_${id}`).value.trim();
+            const regex = /^[a-zA-Z0-9\u4e00-\u9fa5]+$/;
+            if (!val) return showToast('名称不能为空', 'error');
+            if (val.length > 15) return showToast('名称最多15个字符', 'error');
+            if (!regex.test(val)) return showToast('仅支持汉字、字母及数字', 'error');
+
+            const node = findNode(directories, id); node.name = val; state.editingDirId = null; renderDirectory(); showToast('保存成功');
+        }
+        function cancelEditDir(id) {
+            const node = findNode(directories, id); if (node.name === '新建目录') deleteNode(directories, id);
+            state.editingDirId = null; renderDirectory();
+        }
+        function handleDeleteDir(id) {
+            event.stopPropagation();
+            const node = findNode(directories, id);
+            if (node.count > 0 || (node.children && node.children.some(c=>c.count>0))) 
+                return showToast('该目录下存在标签，无法删除', 'error');
+
+            deleteNode(directories, id); renderDirectory(); showToast('目录已删除');
+        }
+
+        // 拖拽逻辑
+        function handleDragStart(e, id) { e.stopPropagation(); state.draggedNodeId = id; e.target.classList.add('dragging'); }
+        function handleDragOver(e) { e.preventDefault(); }
+        function handleDrop(e, targetId) {
+            e.preventDefault(); e.stopPropagation();
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+            document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+            if (state.draggedNodeId === targetId) return;
+            const sourceNode = findNode(directories, state.draggedNodeId);
+            deleteNode(directories, state.draggedNodeId);
+            const targetNode = findNode(directories, targetId);
+            if (!targetNode.children) targetNode.children = [];
+            targetNode.children.push(sourceNode); targetNode.expand = true;
+            state.draggedNodeId = null; renderDirectory(); showToast(`已移动目录`);
+        }
+
+        function toggleNote(tagId) {
+            const tag = tags.find(t => t.id === tagId);
+            if (tag) {
+                tag.isNoteExpanded = !tag.isNoteExpanded;
+                renderTable();
+            }
+        }
+
+        // Row Builder
+        function buildRow(row) {
+            const statusMap = {
+                '待发布': 'bg-gray-100 text-gray-600 border-gray-200',
+                '已发布': 'bg-green-50 text-green-700 border-green-200',
+                '已下架': 'bg-red-50 text-red-700 border-red-200'
+            };
+            
+            // PRD 4.2 状态机按钮逻辑
+            let btns = '';
+            if (row.status === '待发布' || row.status === '已下架') {
+                btns = `
+                    <button class="text-blue-600 hover:text-blue-800 mr-3 whitespace-nowrap">编辑</button>
+                    <button class="text-blue-600 hover:text-blue-800 mr-3">发布</button>
+                    <button class="text-blue-600 hover:text-blue-800 mr-3">复制</button>
+                    <button onclick="handleDeleteTag('${row.name}', ${row.refCount})" class="text-red-500 hover:text-red-700 mr-3">删除</button>
+                `;
+            } else { // 已发布
+                btns = `
+                    <button onclick="handleOfflineTag('${row.name}', ${row.refCount})" class="text-blue-600 hover:text-blue-800 mr-3">下架</button>
+                    <button class="text-blue-600 hover:text-blue-800 mr-3">复制</button>
+                `;
+            }
+
+            let statusClass = row.status === '已发布' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-100 text-gray-600 border-gray-200';
+            const statusHtml = `<span class="px-2 py-0.5 rounded border ${statusClass} whitespace-nowrap">${row.status}</span>`;
+
+            let noteHtml = row.note;
+            if (row.note.length > 15) {
+                if (row.isNoteExpanded) {
+                    noteHtml = `<span>${row.note}</span> <button onclick="toggleNote('${row.id}')" class="text-blue-600 text-xs ml-1 hover:underline">收起</button>`;
+                } else {
+                    noteHtml = `<span class="line-clamp-1" title="${row.note}">${row.note.substring(0, 15)}...</span> <button onclick="toggleNote('${row.id}')" class="text-blue-600 text-xs ml-1 hover:underline">展开</button>`;
+                }
+            }
+
+            const refLink = row.refCount > 0 
+                ? `<button onclick="openModal('refModal')" class="text-blue-600 font-bold hover:underline">${row.refCount}</button>`
+                : `<span class="text-gray-300">-</span>`;
+
+            return `
+                <tr class="group border-b border-gray-50 hover:bg-blue-50/20 transition-colors text-[13px]">
+                    <td class="px-4 py-3 font-mono text-gray-500">${row.id}</td>
+                    <td class="px-4 py-3"><a href="#" class="text-blue-600 font-medium hover:underline">${row.name}</a></td>
+                    <td class="px-4 py-3 text-gray-600">${row.dirPath}</td>
+                    <td class="px-4 py-3 text-gray-600">${row.method}</td>
+                    <td class="px-4 py-3 text-gray-600">${row.type}</td>
+                    <td class="px-4 py-3">${statusHtml}</td>
+                    <td class="px-4 py-3 text-gray-600">${row.dataType}</td>
+                    <td class="px-4 py-3 text-gray-400 min-w-[150px]">${noteHtml}</td>
+                    <td class="px-4 py-3 text-gray-500 font-mono text-xs">${row.updateTime}</td>
+                    <td class="px-4 py-3 text-center">${refLink}</td>
+                    <td class="px-4 py-3 text-gray-600">${row.creator}</td>
+                    <td class="px-4 py-3 text-gray-500 font-mono text-xs">${row.createTime}</td>
+                    <td class="px-4 py-3 text-right sticky right-0 bg-white group-hover:bg-blue-50/20 shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.05)] border-l border-transparent group-hover:border-gray-100 z-10">
+                        ${btns}
+                    </td>
+                </tr>
+            `;
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        
+        function showToast(msg, type='success') {
+            const el = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            icon.className = type==='error' ? 'ph-fill ph-warning-circle text-lg text-red-400' : 'ph-fill ph-check-circle text-lg text-green-400';
+            document.getElementById('toastMsg').innerText = msg;
+            el.classList.remove('opacity-0', 'translate-y-[-20px]');
+            setTimeout(() => el.classList.add('opacity-0', 'translate-y-[-20px]'), 2000);
+        }
+
+        window.onload = () => { renderDirectory(); renderTable(); }
+    </script>
+</body>
+</html>

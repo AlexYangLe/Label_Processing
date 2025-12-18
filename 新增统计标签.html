@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新建统计标签 - 数据要素运营管理平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f5f7fa; }
+        .step-active { @apply bg-blue-600 text-white border-blue-600; }
+        .step-inactive { @apply bg-white text-gray-500 border-gray-300; }
+        .input-error { @apply border-red-500 ring-1 ring-red-500 focus:ring-red-500 bg-red-50; }
+        .error-text { @apply text-red-500 text-xs mt-1 block; }
+        .tree-select-dropdown { max-height: 200px; overflow-y: auto; position: absolute; z-index: 50; width: 100%; background: white; border: 1px solid #e5e7eb; border-radius: 0.375rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); display: none; }
+        .tree-node { padding: 8px 12px; cursor: pointer; display: flex; align-items: center; font-size: 14px; }
+        .tree-node:hover { background-color: #f3f4f6; color: #2563eb; }
+        .indent-1 { padding-left: 12px; }
+        .indent-2 { padding-left: 24px; }
+        .logic-rail { position: absolute; top: 14px; bottom: 14px; left: 10px; width: 10px; display: flex; align-items: center; border-left: 1px solid #d1d5db; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-radius: 4px 0 0 4px; z-index: 0; }
+        .logic-btn { position: absolute; left: 0px; top: 50%; transform: translateY(-50%); cursor: pointer; width: 20px; height: 20px; border-radius: 4px; border: 1px solid #d1d5db; background-color: #fff; color: #6b7280; font-size: 10px; display: flex; align-items: center; justify-content: center; z-index: 10; }
+        .logic-btn:hover { border-color: #2563eb; color: #2563eb; }
+        #global-tooltip { position: fixed; z-index: 9999; background-color: #1f2937; color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; line-height: 1.5; max-width: 260px; pointer-events: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); opacity: 0; transition: opacity 0.2s; display: none; }
+        #global-tooltip::after { content: ""; position: absolute; width: 0; height: 0; border-style: solid; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+        .calendar-day { padding: 6px; cursor: pointer; border-radius: 4px; font-size: 13px; }
+        .calendar-day:hover:not(.empty) { background-color: #f3f4f6; }
+        .calendar-day.selected { background-color: #2563eb; color: white; }
+        .calendar-day.empty { cursor: default; }
+        .week-day { font-size: 12px; color: #9ca3af; padding-bottom: 8px; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-gray-800">
+
+    <!-- Global Tooltip -->
+    <div id="global-tooltip"></div>
+
+    <!-- Header -->
+    <header class="h-14 bg-blue-600 text-white flex items-center justify-between px-6 shadow-md flex-shrink-0 z-20">
+        <div class="flex items-center gap-3">
+            <i class="ph-fill ph-circles-three-plus text-2xl"></i>
+            <h1 class="text-lg font-bold tracking-wide">数据要素运营管理平台</h1>
+            <span class="opacity-50">|</span>
+            <span class="text-sm opacity-90">控制台</span>
+        </div>
+    </header>
+
+    <!-- Breadcrumb (Updated Link) -->
+    <div class="h-12 bg-white border-b border-gray-200 flex items-center px-6 text-sm text-gray-500 flex-shrink-0">
+        <button class="hover:text-blue-600 mr-2" onclick="window.location.href='标签管理.html'"><i class="ph ph-caret-left"></i></button>
+        <a href="标签管理.html" class="cursor-pointer hover:text-blue-600">标签管理</a>
+        <span class="mx-2">/</span>
+        <span class="text-blue-600 font-medium">新建统计标签</span>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-6 flex flex-col items-center bg-gray-50">
+        
+        <!-- Steps -->
+        <div class="w-full max-w-5xl mb-8 mt-2">
+            <div class="flex items-center justify-center space-x-4">
+                <div class="flex items-center">
+                    <div id="step1-icon" class="w-8 h-8 rounded-full flex items-center justify-center border-2 text-sm font-bold step-active transition-colors">1</div>
+                    <span id="step1-text" class="ml-2 font-medium text-gray-800">配置基础信息</span>
+                </div>
+                <div class="w-32 h-0.5 bg-gray-200"></div>
+                <div class="flex items-center">
+                    <div id="step2-icon" class="w-8 h-8 rounded-full flex items-center justify-center border-2 text-sm font-bold step-inactive transition-colors">2</div>
+                    <span id="step2-text" class="ml-2 font-medium text-gray-400">标签规则</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 1: Basic Info -->
+        <div id="step1-content" class="w-full max-w-4xl bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <form id="basicInfoForm" class="space-y-6">
+                <div class="grid grid-cols-12 gap-4 items-center">
+                    <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span class="text-red-500 mr-1">*</span>标签ID：</label>
+                    <div class="col-span-8">
+                        <input type="text" value="系统自动生成" disabled class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-sm text-gray-500 cursor-not-allowed">
+                    </div>
+                </div>
+                <div class="grid grid-cols-12 gap-4 items-start">
+                    <label class="col-span-2 text-right text-sm font-medium text-gray-700 mt-2"><span class="text-red-500 mr-1">*</span>标签名称：</label>
+                    <div class="col-span-8">
+                        <div class="relative">
+                            <input type="text" id="tagName" class="w-full pl-3 pr-16 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="默认支持汉字、字母、数字、下划线" maxlength="50" oninput="updateCharCount(this, 'tagNameCount'); clearError('tagName')">
+                            <span id="tagNameCount" class="absolute right-3 top-2.5 text-xs text-gray-400 pointer-events-none">0/50</span>
+                        </div>
+                        <p id="tagName-error" class="text-red-500 text-xs mt-1 error-text hidden">请输入标签名称</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-12 gap-4 items-center relative">
+                    <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span class="text-red-500 mr-1">*</span>标签目录：</label>
+                    <div class="col-span-8 relative">
+                        <div id="tagDirBox" class="w-full px-3 py-2 border border-gray-300 rounded text-sm cursor-pointer bg-white flex justify-between items-center transition-all" onclick="toggleTreeDropdown()">
+                            <span id="selectedDirName" class="text-gray-700">未分类</span>
+                            <i class="ph ph-caret-down text-gray-400"></i>
+                        </div>
+                        <input type="hidden" id="tagDir" value="999">
+                        <div id="treeDropdown" class="tree-select-dropdown"></div>
+                        <p id="tagDir-error" class="error-text hidden">请选择标签目录</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-12 gap-4 items-start">
+                    <label class="col-span-2 text-right text-sm font-medium text-gray-700 mt-2">描述：</label>
+                    <div class="col-span-8 relative">
+                        <textarea class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none h-32" placeholder="请输入标签的描述" maxlength="300" oninput="updateCharCount(this, 'descCount')"></textarea>
+                        <span id="descCount" class="absolute right-3 bottom-2 text-xs text-gray-400">0/300</span>
+                    </div>
+                </div>
+            </form>
+            <div class="mt-10 flex justify-center">
+                <button onclick="validateStep1()" class="px-8 py-2.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition shadow-sm">下一步</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Rule Configuration -->
+        <div id="step2-content" class="w-full max-w-[1000px] bg-white rounded-lg shadow-sm border border-gray-200 hidden flex-col p-8">
+            <div class="space-y-8">
+                <!-- 1. 规则定义 -->
+                <div class="space-y-4">
+                    <h3 class="font-bold text-gray-800 text-sm border-l-4 border-blue-600 pl-2">聚合规则定义</h3>
+                    <div class="bg-gray-50 p-6 rounded border border-gray-200 space-y-6">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1"><span class="text-red-500 mr-1">*</span>时间范围</label>
+                                <div class="flex items-center border border-gray-300 rounded px-3 py-2 bg-white cursor-pointer hover:border-blue-500">
+                                    <i class="ph ph-calendar text-gray-400 mr-2"></i>
+                                    <span class="text-sm text-gray-700">过去 30 天</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1"><span class="text-red-500 mr-1">*</span>数据对象</label>
+                                <select id="dataObjectSelect" class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <option value="invoice">票据事件数据</option>
+                                    <option value="detail">票据明细数据</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1"><span class="text-red-500 mr-1">*</span>聚合字段</label>
+                                <select id="fieldSelect" class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" onchange="updateAggMethods()"></select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1"><span class="text-red-500 mr-1">*</span>聚合方式</label>
+                                <select id="aggSelect" class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" onchange="updateResultType()"></select>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="block text-xs font-medium text-gray-500">筛选条件 <span class="text-xs font-normal text-gray-300">(可选)</span></label>
+                                <button class="text-blue-600 text-xs flex items-center hover:underline" onclick="addFilterRow()">
+                                    <i class="ph ph-plus-circle mr-1"></i> 添加筛选
+                                </button>
+                            </div>
+                            <div id="filterContainer" class="pl-8 relative space-y-2 min-h-[20px]"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 标签结果展示 -->
+                <div class="space-y-4">
+                    <h3 class="font-bold text-gray-800 text-sm border-l-4 border-blue-600 pl-2">标签展示设置</h3>
+                    <div class="bg-blue-50 p-6 rounded border border-blue-100 space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <label class="text-sm text-gray-700 font-medium">展示方式：</label>
+                                <select id="displayTypeSelect" class="border border-gray-300 rounded px-3 py-1.5 bg-white text-sm focus:border-blue-500 outline-none w-48" onchange="toggleDisplayType()">
+                                    <option value="discrete">按离散数值展示</option>
+                                    <option value="range">按数值区间展示</option>
+                                </select>
+                            </div>
+                            <div id="discreteConfig" class="flex items-center gap-2">
+                                <label class="text-xs text-gray-500">小数位数：</label>
+                                <input type="number" value="2" min="0" max="6" class="w-16 border border-gray-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <!-- 区间设置 (Table) -->
+                        <div id="rangeConfig" class="space-y-3">
+                            <div class="bg-white rounded border border-gray-200 overflow-hidden">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="bg-gray-50 text-gray-500">
+                                        <tr>
+                                            <th class="px-4 py-2 w-1/3">标签值 <span class="text-red-500">*</span></th>
+                                            <th class="px-4 py-2">分区规则 <span class="text-xs font-normal text-gray-400 ml-1">(左闭右开)</span></th>
+                                            <th class="px-4 py-2 w-16"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rangeTableBody" class="divide-y divide-gray-100"></tbody>
+                                </table>
+                                <div class="p-3 bg-gray-50 border-t border-gray-200">
+                                    <button class="w-full py-1.5 border border-dashed border-blue-300 text-blue-600 text-xs rounded hover:bg-blue-50 flex items-center justify-center gap-1" onclick="addRangeRow()">
+                                        <i class="ph ph-plus"></i> 添加分区
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Fallback Value -->
+                            <div class="flex items-center gap-3 bg-white p-3 rounded border border-gray-200 border-dashed">
+                                <label class="text-xs text-gray-600 font-medium whitespace-nowrap">未命中区间时的标签值：</label>
+                                <input type="text" class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none placeholder-gray-400" placeholder="默认为空">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-200 mt-8 pt-6 flex justify-center gap-4">
+                <button onclick="goToStep1()" class="px-6 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded hover:bg-gray-50 transition">上一步</button>
+                <button class="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition shadow-sm" onclick="saveData()">保存</button>
+                <button class="px-6 py-2 bg-blue-50 border border-blue-600 text-blue-700 text-sm font-medium rounded hover:bg-blue-100 transition">保存并发布</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Date Picker Custom Modal (New Feature) -->
+    <div id="datePickerModal" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 bg-transparent" onclick="closeDatePicker()"></div>
+        <div id="datePickerContent" class="absolute bg-white rounded-lg shadow-xl border border-gray-200 w-[320px] overflow-hidden flex flex-col transition-all duration-200 opacity-0 scale-95" style="top: 0; left: 0;">
+            <!-- Tabs -->
+            <div class="flex border-b border-gray-200 bg-gray-50">
+                <div class="flex-1 text-center py-2.5 text-sm font-medium cursor-pointer border-b-2 border-blue-600 text-blue-600 bg-white" id="tabStatic" onclick="switchDateTab('static')">
+                    <span class="flex items-center justify-center gap-1" onmouseenter="showTooltip(this, '日期不随着时间推移而改变。<br>若在1月1日设置查询日期为「今天」，则第二天的查询日期仍为1月1日')" onmouseleave="hideTooltip()">
+                        静态时间 <i class="ph ph-info text-xs text-gray-400"></i>
+                    </span>
+                </div>
+                <div class="flex-1 text-center py-2.5 text-sm font-medium cursor-pointer text-gray-500 hover:text-blue-500 border-b-2 border-transparent" id="tabDynamic" onclick="switchDateTab('dynamic')">
+                    <span class="flex items-center justify-center gap-1" onmouseenter="showTooltip(this, '日期随着时间推移而更新。<br>若在1月1日设置查询日期为「今天」，则第二天的查询日期为1月2日')" onmouseleave="hideTooltip()">
+                        动态时间 <i class="ph ph-info text-xs text-gray-400"></i>
+                    </span>
+                </div>
+            </div>
+            <!-- Static Content -->
+            <div id="staticContent" class="p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <button class="p-1 hover:bg-gray-100 rounded text-gray-500" onclick="changeMonth(-1)"><i class="ph ph-caret-left"></i></button>
+                    <span class="text-sm font-bold text-gray-700" id="calendarTitle">2025年 12月</span>
+                    <button class="p-1 hover:bg-gray-100 rounded text-gray-500" onclick="changeMonth(1)"><i class="ph ph-caret-right"></i></button>
+                </div>
+                <div class="calendar-grid mb-2"><div class="week-day">日</div><div class="week-day">一</div><div class="week-day">二</div><div class="week-day">三</div><div class="week-day">四</div><div class="week-day">五</div><div class="week-day">六</div></div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+            <!-- Dynamic Content -->
+            <div id="dynamicContent" class="p-4 hidden space-y-4">
+                <div class="grid grid-cols-3 gap-3">
+                    <button class="border border-blue-500 bg-blue-50 text-blue-600 rounded py-2 text-sm font-medium dynamic-opt" data-val="today" onclick="selectDynamicType(this, 'today')">今日</button>
+                    <button class="border border-gray-300 text-gray-600 rounded py-2 text-sm hover:border-blue-300 dynamic-opt" data-val="yesterday" onclick="selectDynamicType(this, 'yesterday')">昨日</button>
+                    <button class="border border-gray-300 text-gray-600 rounded py-2 text-sm hover:border-blue-300 dynamic-opt" data-val="pastN" onclick="selectDynamicType(this, 'pastN')">过去N天</button>
+                </div>
+                <div id="dynamicInputArea" class="hidden">
+                    <label class="block text-xs text-gray-500 mb-1">过去天数 (N)</label>
+                    <input type="number" id="pastNDaysInput" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:border-blue-500 outline-none" placeholder="输入正整数" min="1" value="3">
+                </div>
+                <div class="bg-gray-50 p-3 rounded border border-gray-200 text-xs text-gray-500">预览：<span id="dynamicPreview" class="font-bold text-gray-700">2025-12-09</span></div>
+            </div>
+            <!-- Footer -->
+            <div class="p-3 border-t border-gray-200 flex justify-end gap-2 bg-gray-50">
+                <button class="px-3 py-1.5 border border-gray-300 rounded text-xs bg-white hover:bg-gray-50" onclick="closeDatePicker()">取消</button>
+                <button class="px-3 py-1.5 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 shadow-sm" onclick="confirmDate()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="confirmModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-gray-900/30 backdrop-blur-[1px]" onclick="cancelObjectSwitch()"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] bg-white rounded-lg shadow-xl p-6">
+            <div class="flex items-start gap-3">
+                <div class="bg-yellow-100 p-2.5 rounded-full flex-shrink-0"><i class="ph-fill ph-warning text-yellow-600 text-xl"></i></div>
+                <div>
+                    <h4 class="font-bold text-gray-800 text-base">切换数据对象确认</h4>
+                    <p class="text-sm text-gray-500 mt-2 leading-relaxed">切换数据对象将 <span class="text-red-500 font-bold">清空</span> 当前已配置的所有筛选条件和区间规则，确认继续吗？</p>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="cancelObjectSwitch()" class="px-4 py-1.5 border border-gray-300 rounded text-gray-600 hover:bg-gray-50 text-xs transition">取消</button>
+                <button onclick="confirmObjectSwitch()" class="px-4 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 shadow-sm text-xs transition">确认切换</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 bg-gray-800/90 text-white px-5 py-2.5 rounded shadow-xl transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none z-[80] flex items-center gap-2.5">
+        <i id="toastIcon" class="ph-fill ph-check-circle text-lg text-green-400"></i><span id="toastMsg" class="text-sm font-medium">操作成功</span>
+    </div>
+
+    <script>
+        const dataSource = { 'invoice': { name: '票据事件数据', fields: [{ key: 'total_amount', name: '就诊总金额', type: 'number' }, { key: 'consultation_date', name: '就诊日期', type: 'date' }] }, 'detail': { name: '票据明细数据', fields: [{ key: 'item_price', name: '单价', type: 'number' }, { key: 'item_name', name: '项目名称', type: 'text' }] } };
+        const aggRules = { 'number': ['求和', '平均值', '最大值', '最小值', '总次数', '去重计数'], 'text': ['总次数', '去重计数'], 'date': ['最大值 (最近)', '最小值 (最早)', '总次数', '去重计数'] };
+        let filters = [{ field: '', op: '', val: '' }]; let filterRelation = 'AND'; let ranges = [ { label: '低价值', min: '-∞', max: '' }, { label: '高价值', min: '', max: '+∞' } ]; let currentResultType = 'number'; let currentDataObject = 'invoice'; let pendingDataObject = null; let currentMode = 'static'; let selectedStaticDate = new Date().toISOString().split('T')[0]; let selectedDynamicType = 'today'; let viewDate = new Date();
+        function showTooltip(el, text) { const tooltip = document.getElementById('global-tooltip'); const rect = el.getBoundingClientRect(); tooltip.innerHTML = text; tooltip.style.display = 'block'; const top = rect.top - tooltip.offsetHeight - 8; const left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2); tooltip.style.top = `${top}px`; tooltip.style.left = `${left}px`; requestAnimationFrame(() => tooltip.style.opacity = '1'); }
+        function hideTooltip() { const tooltip = document.getElementById('global-tooltip'); tooltip.style.opacity = '0'; setTimeout(() => tooltip.style.display = 'none', 200); }
+        function renderRanges() { const tbody = document.getElementById('rangeTableBody'); const isDate = currentResultType === 'date'; const inputType = isDate ? 'text' : 'number'; const html = ranges.map((r, i) => { const minInput = r.min === '-∞' ? `<span class="text-lg font-bold mx-2 text-gray-500">-∞</span>` : `<input type="${inputType}" ${isDate?'readonly':''} class="border border-gray-300 rounded px-2 py-1 text-xs w-32 text-center focus:border-blue-500 cursor-pointer bg-white" value="${r.min}" ${isDate ? `onclick="openDatePicker(this, ${i}, 'min')"` : `onchange="updateRange(${i}, 'min', this.value)"`}>`; const maxInput = r.max === '+∞' ? `<span class="text-lg font-bold mx-2 text-gray-500">+∞</span>` : `<input type="${inputType}" ${isDate?'readonly':''} class="border border-gray-300 rounded px-2 py-1 text-xs w-32 text-center focus:border-blue-500 cursor-pointer bg-white" value="${r.max}" ${isDate ? `onclick="openDatePicker(this, ${i}, 'max')"` : `onchange="updateRange(${i}, 'max', this.value)"`}>`; return ` <tr class="group hover:bg-gray-50 transition-colors"> <td class="px-4 py-2"><input type="text" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:border-blue-500 outline-none" placeholder="如: 活跃" value="${r.label}"></td> <td class="px-4 py-2"> <div class="flex items-center gap-2"> <span class="text-gray-400 font-bold">[</span>${minInput}<span class="text-gray-400">,</span>${maxInput}<span class="text-gray-400 font-bold">)</span> </div> </td> <td class="px-4 py-2 text-center"><button class="text-gray-400 hover:text-red-500 p-1" onclick="removeRange(${i})"><i class="ph ph-bold ph-trash"></i></button></td> </tr> `; }).join(''); tbody.innerHTML = html; }
+        function addRangeRow() { ranges.splice(ranges.length-1, 0, { label: '', min: '', max: '' }); renderRanges(); }
+        function removeRange(i) { if(ranges.length <= 1) { showToast('至少保留一个区间', 'error'); return; } ranges.splice(i, 1); renderRanges(); }
+        function openDatePicker(el, i, type) { activeDateInput = { index: i, type: type, element: el }; const rect = el.getBoundingClientRect(); const modal = document.getElementById('datePickerContent'); let top = rect.bottom + window.scrollY + 5; if(window.innerHeight - rect.bottom < 360) top = rect.top + window.scrollY - 360; modal.style.top = `${top}px`; modal.style.left = `${rect.left + window.scrollX}px`; document.getElementById('datePickerModal').classList.remove('hidden'); requestAnimationFrame(()=> { modal.classList.remove('opacity-0', 'scale-95'); modal.classList.add('opacity-100', 'scale-100'); }); renderCalendar(); updateDynamicPreview(); }
+        function closeDatePicker() { const modal = document.getElementById('datePickerContent'); modal.classList.remove('opacity-100', 'scale-100'); modal.classList.add('opacity-0', 'scale-95'); setTimeout(()=>document.getElementById('datePickerModal').classList.add('hidden'), 200); }
+        function switchDateTab(mode) { currentMode = mode; document.getElementById('tabStatic').className = mode==='static' ? "flex-1 text-center py-2.5 text-sm font-medium cursor-pointer border-b-2 border-blue-600 text-blue-600 bg-white" : "flex-1 text-center py-2.5 text-sm font-medium cursor-pointer text-gray-500 hover:text-blue-500 border-b-2 border-transparent"; document.getElementById('tabDynamic').className = mode==='dynamic' ? "flex-1 text-center py-2.5 text-sm font-medium cursor-pointer border-b-2 border-blue-600 text-blue-600 bg-white" : "flex-1 text-center py-2.5 text-sm font-medium cursor-pointer text-gray-500 hover:text-blue-500 border-b-2 border-transparent"; document.getElementById('staticContent').classList.toggle('hidden', mode!=='static'); document.getElementById('dynamicContent').classList.toggle('hidden', mode!=='dynamic'); }
+        function renderCalendar() { const y = viewDate.getFullYear(), m = viewDate.getMonth(); document.getElementById('calendarTitle').textContent = `${y}年 ${m+1}月`; const first = new Date(y, m, 1).getDay(), days = new Date(y, m+1, 0).getDate(); let h = ''; for(let i=0;i<first;i++) h+=`<div class="calendar-day empty"></div>`; for(let d=1;d<=days;d++) { const s = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const cls = s===selectedStaticDate ? "selected" : (s===new Date().toISOString().split('T')[0] ? "border border-blue-300 text-blue-600" : ""); h+=`<div class="calendar-day ${cls}" onclick="selectStaticDate('${s}')">${d}</div>`; } document.getElementById('calendarGrid').innerHTML = h; }
+        function changeMonth(d) { viewDate.setMonth(viewDate.getMonth()+d); renderCalendar(); }
+        function selectStaticDate(d) { selectedStaticDate=d; renderCalendar(); }
+        function selectDynamicType(btn, t) { document.querySelectorAll('.dynamic-opt').forEach(el=>{ el.classList.remove('border-blue-500','bg-blue-50','text-blue-600'); el.classList.add('border-gray-300','text-gray-600'); }); btn.classList.remove('border-gray-300','text-gray-600'); btn.classList.add('border-blue-500','bg-blue-50','text-blue-600'); selectedDynamicType=t; document.getElementById('dynamicInputArea').classList.toggle('hidden', t!=='pastN'); updateDynamicPreview(); }
+        function updateDynamicPreview() { const n = selectedDynamicType==='today'?0 : selectedDynamicType==='yesterday'?1 : (parseInt(document.getElementById('pastNDaysInput').value)||0); const d = new Date(); d.setDate(d.getDate()-n); const label = selectedDynamicType==='today'?'今日':selectedDynamicType==='yesterday'?'昨日':`过去${n}天`; const dateStr = d.toISOString().split('T')[0]; document.getElementById('dynamicPreview').textContent = dateStr; document.getElementById('dynamicPreview').setAttribute('data-label', label); }
+        document.getElementById('pastNDaysInput').addEventListener('input', updateDynamicPreview);
+        function confirmDate() { const val = currentMode==='static' ? selectedStaticDate : `${document.getElementById('dynamicPreview').getAttribute('data-label')} | ${document.getElementById('dynamicPreview').textContent}`; if(activeDateInput) { ranges[activeDateInput.index][activeDateInput.type] = val; activeDateInput.element.value = val; } closeDatePicker(); }
+        function updateCharCount(input, id) { document.getElementById(id).textContent = `${input.value.length}/${input.getAttribute('maxlength')}`; }
+        function clearError(id) { const el = document.getElementById(id); const msg = document.getElementById(id + '-error'); const box = document.getElementById(id + 'Box') || el; if(el) el.classList.remove('input-error'); if(box) box.classList.remove('input-error'); if(msg) msg.classList.add('hidden'); }
+        function showToast(msg, type='success') { const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; t.classList.remove('opacity-0', 'translate-y-[-20px]'); setTimeout(()=>t.classList.add('opacity-0', 'translate-y-[-20px]'), 2000); }
+        const directoryData = [{ id: 1, name: '用户属性', children: [{ id: 11, name: '基础信息' }] }, { id: 99, name: '未分类' }];
+        document.getElementById('treeDropdown').innerHTML = renderTreeNodes(directoryData);
+        function renderTreeNodes(nodes, level=0) { let html = ''; nodes.forEach(node => { html += `<div class="tree-node indent-${level}" onclick="selectDir('${node.id}', '${node.name}')"><i class="ph-fill ph-folder text-yellow-400 mr-2"></i> ${node.name}</div>`; if(node.children) html += renderTreeNodes(node.children, level + 1); }); return html; }
+        function toggleTreeDropdown() { const d = document.getElementById('treeDropdown'); d.style.display = d.style.display==='block'?'none':'block'; }
+        function selectDir(id, name) { document.getElementById('selectedDirName').textContent = name; document.getElementById('tagDir').value = id; document.getElementById('treeDropdown').style.display = 'none'; clearError('tagDir'); }
+        function validateStep1() { let valid = true; const name = document.getElementById('tagName'); if(!name.value.trim()) { name.classList.add('input-error'); document.getElementById('tagName-error').classList.remove('hidden'); valid = false; } if(valid) goToStep2(); }
+        function goToStep2() { document.getElementById('step1-content').classList.add('hidden'); document.getElementById('step2-content').classList.remove('hidden'); document.getElementById('step2-content').classList.add('flex'); document.getElementById('step1-icon').classList.replace('step-active', 'bg-blue-600'); document.getElementById('step1-icon').classList.add('text-white', 'border-blue-600'); document.getElementById('step2-icon').classList.replace('step-inactive', 'step-active'); initStep2(); }
+        function goToStep1() { document.getElementById('step2-content').classList.add('hidden'); document.getElementById('step2-content').classList.remove('flex'); document.getElementById('step1-content').classList.remove('hidden'); document.getElementById('step2-icon').classList.replace('step-active', 'step-inactive'); }
+        function initStep2() { const select = document.getElementById('dataObjectSelect'); select.value = currentDataObject; select.removeEventListener('change', onDataObjectChange); select.addEventListener('change', onDataObjectChange); updateFieldSelect(); renderFilters(); renderRanges(); }
+        function onDataObjectChange(e) { const newValue = e.target.value; if(filters.length > 0 || (document.getElementById('displayTypeSelect').value === 'range')) { pendingDataObject = newValue; document.getElementById('confirmModal').classList.remove('hidden'); } else { currentDataObject = newValue; resetConfigs(); } }
+        function confirmObjectSwitch() { currentDataObject = pendingDataObject; resetConfigs(); document.getElementById('confirmModal').classList.add('hidden'); pendingDataObject = null; }
+        function cancelObjectSwitch() { document.getElementById('dataObjectSelect').value = currentDataObject; document.getElementById('confirmModal').classList.add('hidden'); pendingDataObject = null; }
+        function resetConfigs() { updateFieldSelect(); filters = []; document.getElementById('displayTypeSelect').value = 'discrete'; toggleDisplayType(); ranges = [{ label: '', min: '-∞', max: '' }, { label: '', min: '', max: '+∞' }]; renderFilters(); renderRanges(); }
+        function updateFieldSelect() { const fields = dataSource[currentDataObject].fields; document.getElementById('fieldSelect').innerHTML = fields.map(f => `<option value="${f.key}" data-type="${f.type}">${f.name}</option>`).join(''); updateAggMethods(); }
+        function updateAggMethods() { const select = document.getElementById('fieldSelect'); const type = select.options[select.selectedIndex].getAttribute('data-type'); document.getElementById('aggSelect').innerHTML = (aggRules[type]||aggRules['text']).map(m => `<option value="${m}">${m}</option>`).join(''); updateResultType(); }
+        function updateResultType() { const type = document.getElementById('fieldSelect').options[document.getElementById('fieldSelect').selectedIndex].getAttribute('data-type'); const agg = document.getElementById('aggSelect').value; currentResultType = (type==='date' && (agg.includes('最大')||agg.includes('最小'))) ? 'date' : 'number'; document.getElementById('discreteConfig').classList.toggle('hidden', currentResultType==='date'); renderRanges(); }
+        function renderFilters() { const container = document.getElementById('filterContainer'); if(filters.length === 0) { container.innerHTML = `<div class="text-xs text-gray-400 italic">暂无筛选条件</div>`; return; } const fieldOptions = dataSource[currentDataObject].fields.map(f => `<option value="${f.key}">${f.name}</option>`).join(''); let html = ''; if(filters.length > 1) { html += `<div class="logic-rail"></div> <button class="logic-btn ${filterRelation==='AND'?'active':''}" onclick="toggleRelation()"> ${filterRelation==='AND'?'且':'或'} </button>`; } html += filters.map((f, idx) => ` <div class="relative flex items-center gap-2 mb-2"> ${filters.length > 1 ? '<div class="w-3 border-b border-gray-300 absolute left[5px] top-1/2"></div>' : ''} <div class="flex-1 bg-white border border-gray-200 rounded p-2 flex items-center gap-2 hover:border-blue-300 transition-colors z-10"> <select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none min-w-[120px]">${fieldOptions}</select> <select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none w-24"><option>等于</option></select> <input type="text" class="border border-gray-300 rounded px-2 py-1 text-xs outline-none flex-1" placeholder="输入值" value="${f.val}"> <button class="text-gray-400 hover:text-red-500 p-1" onclick="removeFilter(${idx})"><i class="ph ph-trash"></i></button> </div> </div> `).join(''); container.innerHTML = html; }
+        function toggleRelation() { filterRelation = filterRelation==='AND'?'OR':'AND'; renderFilters(); }
+        function addFilterRow() { filters.push({ field: '', op: '', val: '' }); renderFilters(); }
+        function removeFilter(i) { filters.splice(i, 1); renderFilters(); }
+        function toggleDisplayType() { const type = document.getElementById('displayTypeSelect').value; document.getElementById('discreteConfig').classList.toggle('hidden', type !== 'discrete'); document.getElementById('rangeConfig').classList.toggle('hidden', type !== 'range'); if(type === 'range') renderRanges(); }
+        function updateRange(i,f,v) { ranges[i][f]=v; }
+        function saveData() { showToast('保存成功'); }
+    </script>
+</body>
+</html>

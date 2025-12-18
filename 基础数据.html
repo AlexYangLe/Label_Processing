@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基础数据配置 - 数据要素运营管理平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .sidebar-item.active { background-color: #e0f2fe; color: #0284c7; border-right: 3px solid #0284c7; }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .char-counter { position: absolute; right: 8px; font-size: 12px; color: #9ca3af; pointer-events: none; }
+        .input-wrapper .char-counter { top: 50%; transform: translateY(-50%); }
+        .textarea-wrapper .char-counter { bottom: 8px; }
+        .input-error { border-color: #ef4444 !important; background-color: #fef2f2; }
+        .input-error:focus { ring-color: #ef4444 !important; border-color: #ef4444 !important; }
+        .error-msg { font-size: 12px; color: #ef4444; margin-top: 4px; display: none; }
+        .show-error { display: block; }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col font-sans text-gray-800" onclick="handleGlobalClick(event)">
+
+    <!-- 顶栏 -->
+    <header class="h-14 bg-blue-600 text-white flex items-center justify-between px-4 shadow-md flex-shrink-0 z-20">
+        <div class="flex items-center gap-3">
+            <div class="text-2xl"><i class="ph-fill ph-chart-bar"></i></div>
+            <h1 class="text-lg font-bold">数据要素运营管理平台</h1>
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-blue-800 rounded-full flex items-center justify-center text-xs">超</div>
+            <span class="text-sm">超级管理员</span>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- 左侧目录 -->
+        <aside class="w-72 bg-white border-r border-gray-200 flex flex-col flex-shrink-0 z-10 relative">
+            <div class="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <span class="text-xs font-semibold text-gray-500 uppercase">基础数据列表</span>
+                <div class="relative">
+                    <button id="sortBtn" onclick="toggleSortMenu(event)" class="text-gray-400 hover:text-blue-600 p-1 rounded hover:bg-gray-200 transition">
+                        <i class="ph ph-arrows-down-up text-lg"></i>
+                    </button>
+                    <div id="sortMenu" class="hidden absolute right-0 top-8 w-40 bg-white shadow-xl border border-gray-100 rounded-md z-50 py-1 text-sm text-gray-700 origin-top-right">
+                        <button onclick="applySort('name_asc')" class="w-full text-left px-4 py-2 hover:bg-blue-50 hover:text-blue-600 flex justify-between items-center">名称 (A-Z) <i class="ph-fill ph-check text-blue-600 hidden" id="check_name_asc"></i></button>
+                        <button onclick="applySort('name_desc')" class="w-full text-left px-4 py-2 hover:bg-blue-50 hover:text-blue-600 flex justify-between items-center">名称 (Z-A) <i class="ph-fill ph-check text-blue-600 hidden" id="check_name_desc"></i></button>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <button onclick="applySort('time_asc')" class="w-full text-left px-4 py-2 hover:bg-blue-50 hover:text-blue-600 flex justify-between items-center">时间 (最早) <i class="ph-fill ph-check text-blue-600 hidden" id="check_time_asc"></i></button>
+                        <button onclick="applySort('time_desc')" class="w-full text-left px-4 py-2 hover:bg-blue-50 hover:text-blue-600 flex justify-between items-center">时间 (最新) <i class="ph-fill ph-check text-blue-600 hidden" id="check_time_desc"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <ul id="objectList" class="flex-1 overflow-y-auto py-2 space-y-1"></ul>
+
+            <div class="p-4 border-t border-gray-200 bg-gray-50">
+                <button onclick="openModal('objectModal', 'create')" class="w-full flex items-center justify-center gap-2 py-2 border border-dashed border-blue-400 text-blue-600 rounded hover:bg-blue-50 transition text-sm bg-white">
+                    <i class="ph ph-plus-circle"></i> 新增数据对象
+                </button>
+            </div>
+        </aside>
+
+        <!-- 右侧内容区 -->
+        <main class="flex-1 flex flex-col min-w-0 bg-white">
+            <div class="px-8 py-6 border-b border-gray-100 bg-white shadow-sm z-10">
+                <div class="flex justify-between items-start mb-4">
+                    <h2 id="headerTitle" class="text-2xl font-bold text-gray-800 tracking-tight">--</h2>
+                    <div class="flex gap-3">
+                        <button onclick="handleDeleteObject()" class="px-4 py-1.5 border border-gray-300 text-gray-600 rounded hover:bg-gray-50 text-sm transition">删除对象</button>
+                        <button onclick="openModal('objectModal', 'edit')" class="px-4 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm transition shadow-sm">编辑对象</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-y-2 text-sm text-gray-500">
+                    <div><span class="text-gray-400 mr-2">创建人:</span> 张三</div>
+                    <div><span class="text-gray-400 mr-2">创建时间:</span> <span id="headerCreateTime">--</span></div>
+                    <div><span class="text-gray-400 mr-2">最后更新:</span> <span id="headerUpdateTime">--</span></div>
+                    <div class="col-span-4 mt-1 flex items-start">
+                        <span class="text-gray-400 mr-2 flex-shrink-0">备注:</span> 
+                        <span id="headerNote" class="text-gray-600">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-8 py-4 bg-gray-50/50 flex justify-between items-center border-b border-gray-200">
+                <div class="relative w-80">
+                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="搜索字段名 / 显示名" oninput="renderFieldTable()" class="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none transition shadow-sm">
+                </div>
+                <button onclick="openModal('fieldModal', 'create')" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm shadow-sm transition">
+                    <i class="ph ph-plus"></i> 新增字段
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-auto px-8 py-4">
+                <table class="w-full text-sm text-left border-collapse">
+                    <thead class="bg-gray-50 text-gray-500 border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+                        <tr>
+                            <th class="px-4 py-3 font-medium w-48 bg-gray-50">字段名</th>
+                            <th class="px-4 py-3 font-medium w-40 bg-gray-50">显示名</th>
+                            <th class="px-4 py-3 font-medium w-28 bg-gray-50">数据类型</th>
+                            <th class="px-4 py-3 font-medium min-w-[200px] bg-gray-50">描述/备注</th>
+                            <th class="px-4 py-3 font-medium w-40 bg-gray-50">创建时间</th>
+                            <th class="px-4 py-3 font-medium w-40 bg-gray-50">更新时间</th>
+                            <th class="px-4 py-3 font-medium text-right w-36 bg-gray-50">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fieldTableBody" class="divide-y divide-gray-100 text-gray-700"></tbody>
+                </table>
+                <div id="emptyState" class="hidden flex-col items-center justify-center py-20 text-gray-400">
+                    <div class="bg-gray-100 p-4 rounded-full mb-3"><i class="ph ph-magnifying-glass text-3xl"></i></div>
+                    <p>暂无字段数据</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 1. 数据对象弹窗 -->
+    <div id="objectModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="closeModal('objectModal')"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] bg-white rounded-lg shadow-xl p-6">
+            <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-3">
+                <h3 class="text-lg font-bold" id="objectModalTitle">新增数据对象</h3>
+                <button onclick="closeModal('objectModal')" class="text-gray-400 hover:text-gray-600"><i class="ph ph-x text-lg"></i></button>
+            </div>
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><span class="text-red-500">*</span> 数据对象名称</label>
+                    <div class="relative input-wrapper">
+                        <input type="text" id="objNameInput" maxlength="50" oninput="updateCount(this)" class="w-full pl-3 pr-14 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500 outline-none transition disabled:bg-gray-100 disabled:text-gray-500" placeholder="需以英文开头，仅包含字母、数字及下划线">
+                        <span class="char-counter">0/50</span>
+                    </div>
+                    <p class="error-msg" id="err-objName">需以英文开头，仅包含字母、数字及下划线</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><span class="text-red-500">*</span> 显示名称</label>
+                    <div class="relative input-wrapper">
+                        <input type="text" id="objDisplayInput" maxlength="20" oninput="updateCount(this)" class="w-full pl-3 pr-14 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="仅支持汉字、字母及数字，不可包含特殊符号">
+                        <span class="char-counter">0/20</span>
+                    </div>
+                    <p class="error-msg" id="err-objDisplay">仅支持汉字、字母及数字，不可包含特殊符号</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">备注</label>
+                    <div class="relative textarea-wrapper">
+                        <textarea id="objNoteInput" rows="3" maxlength="300" oninput="updateCount(this)" class="w-full pl-3 pr-3 pb-6 pt-2 border border-gray-300 rounded text-sm focus:ring-blue-500 outline-none transition resize-none" placeholder="请输入备注描述..."></textarea>
+                        <span class="char-counter">0/300</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3 pt-3 border-t border-gray-100">
+                <button onclick="closeModal('objectModal')" class="px-4 py-2 border border-gray-300 rounded text-gray-600 text-sm hover:bg-gray-50">取消</button>
+                <button onclick="saveObject()" class="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 字段弹窗 -->
+    <div id="fieldModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="closeModal('fieldModal')"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] bg-white rounded-lg shadow-xl p-6">
+            <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-3">
+                <h3 class="text-lg font-bold" id="fieldModalTitle">新增字段</h3>
+                <button onclick="closeModal('fieldModal')" class="text-gray-400 hover:text-gray-600"><i class="ph ph-x text-lg"></i></button>
+            </div>
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><span class="text-red-500">*</span> 字段名称</label>
+                    <div class="relative input-wrapper">
+                        <input type="text" id="fieldNameInput" maxlength="50" oninput="updateCount(this)" class="w-full pl-3 pr-14 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500 outline-none transition disabled:bg-gray-100 disabled:text-gray-500" placeholder="需以英文开头，仅包含字母、数字及下划线">
+                        <span class="char-counter">0/50</span>
+                    </div>
+                    <p class="error-msg" id="err-fieldName">需以英文开头，仅包含字母、数字及下划线</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><span class="text-red-500">*</span> 字段显示名称</label>
+                    <div class="relative input-wrapper">
+                        <input type="text" id="fieldDisplayInput" maxlength="20" oninput="updateCount(this)" class="w-full pl-3 pr-14 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="仅支持汉字、字母及数字，不可包含特殊符号">
+                        <span class="char-counter">0/20</span>
+                    </div>
+                    <p class="error-msg" id="err-fieldDisplay">仅支持汉字、字母及数字，不可包含特殊符号</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><span class="text-red-500">*</span> 字段类型</label>
+                    <select id="fieldTypeInput" class="w-full px-3 py-2 border border-gray-300 rounded text-sm bg-white focus:ring-blue-500 outline-none disabled:bg-gray-100">
+                        <option value="string" selected>文本型 (String)</option>
+                        <option value="number">数值型 (Number)</option>
+                        <option value="date">日期时间型 (Date)</option>
+                        <option value="boolean">布尔型 (Boolean)</option>
+                        <option value="array">集合型 (Array)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">备注</label>
+                    <div class="relative textarea-wrapper">
+                        <textarea id="fieldNoteInput" rows="3" maxlength="300" oninput="updateCount(this)" class="w-full pl-3 pr-3 pb-6 pt-2 border border-gray-300 rounded text-sm focus:ring-blue-500 resize-none outline-none" placeholder="请输入字段业务含义描述..."></textarea>
+                        <span class="char-counter">0/300</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3 pt-3 border-t border-gray-100">
+                <button onclick="closeModal('fieldModal')" class="px-4 py-2 border border-gray-300 rounded text-gray-600 text-sm hover:bg-gray-50">取消</button>
+                <button onclick="saveField()" class="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认删除弹窗 -->
+    <div id="confirmModal" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 bg-black/20" onclick="closeConfirm()"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-start gap-3">
+                <div class="bg-red-100 p-2 rounded-full"><i class="ph-fill ph-warning text-red-600 text-xl"></i></div>
+                <div><h4 class="font-bold text-gray-800 text-lg">确认删除?</h4><p class="text-sm text-gray-500 mt-1" id="confirmText">删除后无法恢复，请谨慎操作。</p></div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="closeConfirm()" class="px-4 py-2 border border-gray-300 rounded text-gray-600 text-sm hover:bg-gray-50">取消</button>
+                <button id="confirmBtn" class="px-4 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700 shadow-sm">确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-xl transform transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none z-[70] flex items-center gap-3">
+        <i id="toastIcon" class="ph-fill ph-check-circle text-lg text-green-400"></i><span id="toastMsg" class="font-medium">操作成功</span>
+    </div>
+
+    <script>
+        const createTime = 1725855143000;
+        function createField(name, displayName) { let type = 'string'; if (name.includes('amount') || name.includes('fee') || name.includes('cost') || name.includes('price') || name.includes('days') || name.includes('age') || name.includes('num')) type = 'number'; if (name.includes('date') || name.includes('time')) type = 'date'; return { id: Math.floor(Math.random() * 1000000), name: name, displayName: displayName, type: type, note: '', createTime: createTime, updateTime: null, isUsed: Math.random() > 0.8 }; }
+        const invoiceFieldsRaw = [ ['invoice_id','归集ID'],['user_id','用户ID'],['invoice_user_id','票据对应的用户ID'],['surname','姓氏'],['gender','性别'],['brithday','出生年月'],['age','年龄'],['medical_insurance_type','医保类型'],['is_insurance','医保结算'],['consultation_date','就诊日期'],['in_hospital_date','入院日期'],['out_hospital_date','出院日期'],['estimated_stay_days','住院天数'],['hospital_id','医疗机构ID'],['hospital_name','医疗机构名称'],['hospital_province','省'],['hospital_city','市'],['hospital_level','医疗机构等级'],['hospital_type_name','医疗机构类型'],['department_name','科室名称'],['medical_type','医疗类别(门诊、住院)'],['total_amount','就诊总金额'],['bed_fee','床位费'],['registration_fee','挂号费'],['nursing_fee','护理费'],['surgical_fee','手术费'],['laboratory_test_fee','化验费'],['surgery_fee','手术费'],['sanitary_material_fee','卫生材料费'],['western_medicine_fee','西药费'],['examination_fee','诊察费'],['inspection_fee','检查费'],['treatment_fee','治疗费'],['Chinese_patent_medicine_fee','中成药费'],['Chinese_herbal_medicine_slices','中药饮片费'],['general_medical_fee','一般诊疗费'],['other_charges','其他收费'],['fund_pay_amount','医保统筹支付'],['other_pay_amount','其他支付'],['account_pay_amount','个人账户支付'],['own_pay_amount','个人现金支付'],['selfpayment_amount','个人自付'],['selfpayment_cost','个人自费'],['event_date','事件发生日期'] ];
+        const medicalDetailFieldsRaw = [ ['invoice_id','归集ID'],['user_id','用户ID'],['invoice_user_id','票据对应的用户ID'],['surname','姓氏'],['gender','性别'],['brithday','出生年月'],['age','年龄'],['medical_insurance_type','医保类型'],['consultation_date','就诊日期'],['in_hospital_date','入院日期'],['out_hospital_date','出院日期'],['estimated_stay_days','住院天数'],['hospital_id','医疗机构ID'],['hospital_name','医疗机构名称'],['hospital_province','省'],['hospital_city','市'],['hospital_level','医疗机构等级'],['hospital_type_name','医疗机构类型'],['department_name','科室名称'],['medical_type','医疗类别(门诊、住院)'],['event_type','项目类型'],['aux_item_name','项目明细名称[通用名]'],['item_product_name','项目明细商品名'],['item_manufacturer','项目明细生产厂商'],['item_package','项目明细规格'],['item_num','项目明细数量'],['item_price','项目明细单价'],['item_fee','项目明细费用'],['item_unit','项目明细单位'],['event_date','事件发生日期'] ];
+        let objects = [ { id: 1, name: 'invoice_event_data', displayName: '票据事件数据', note: '核心票据业务主表', createTime: createTime, updateTime: createTime, isUsed: true }, { id: 2, name: 'user_medical_detail_event', displayName: '票据明细数据', note: '包含药品、诊疗项的详细清单', createTime: createTime + 100000, updateTime: createTime + 100000, isUsed: false } ];
+        let fields = { 1: invoiceFieldsRaw.map(item => createField(item[0], item[1])), 2: medicalDetailFieldsRaw.map(item => createField(item[0], item[1])) };
+        let currentObjId = 1, currentSortMethod = 'name_asc', currentModalMode = 'create', currentEditingItem = null;
+        const validators = { objectName: (val) => /^[a-zA-Z][a-zA-Z0-9_]*$/.test(val), displayName: (val) => /^[\u4e00-\u9fa5a-zA-Z0-9]+$/.test(val) };
+        function bindValidation(inputId, errorMsgId, validateFn) { const input = document.getElementById(inputId); const errMsg = document.getElementById(errorMsgId); input.addEventListener('blur', () => { const val = input.value.trim(); if (val && !validateFn(val)) { input.classList.add('input-error'); errMsg.classList.add('show-error'); } else { input.classList.remove('input-error'); errMsg.classList.remove('show-error'); } }); input.addEventListener('focus', () => { input.classList.remove('input-error'); errMsg.classList.remove('show-error'); }); }
+        window.onload = () => { sortObjects(); renderSidebar(); renderMainContent(); updateSortMenuUI(); bindValidation('objNameInput', 'err-objName', validators.objectName); bindValidation('objDisplayInput', 'err-objDisplay', validators.displayName); bindValidation('fieldNameInput', 'err-fieldName', validators.objectName); bindValidation('fieldDisplayInput', 'err-fieldDisplay', validators.displayName); };
+        function updateCount(el) { const max = el.getAttribute('maxlength'); const counter = el.parentElement.querySelector('.char-counter'); if (counter) counter.innerText = `${el.value.length}/${max}`; }
+        function initCounters(modalId) { const modal = document.getElementById(modalId); modal.querySelectorAll('input, textarea').forEach(el => updateCount(el)); modal.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error')); modal.querySelectorAll('.show-error').forEach(el => el.classList.remove('show-error')); }
+        function toggleSortMenu(e) { e.stopPropagation(); document.getElementById('sortMenu').classList.toggle('hidden'); }
+        function handleGlobalClick(e) { const menu = document.getElementById('sortMenu'); const btn = document.getElementById('sortBtn'); if (!menu.classList.contains('hidden') && !menu.contains(e.target) && !btn.contains(e.target)) menu.classList.add('hidden'); }
+        function applySort(method) { currentSortMethod = method; sortObjects(); renderSidebar(); updateSortMenuUI(); document.getElementById('sortMenu').classList.add('hidden'); }
+        function sortObjects() { objects.sort((a, b) => { switch (currentSortMethod) { case 'name_asc': return a.displayName.localeCompare(b.displayName, 'zh-CN'); case 'name_desc': return b.displayName.localeCompare(a.displayName, 'zh-CN'); case 'time_asc': return a.createTime - b.createTime; case 'time_desc': return b.createTime - a.createTime; } }); }
+        function updateSortMenuUI() { ['name_asc', 'name_desc', 'time_asc', 'time_desc'].forEach(key => document.getElementById(`check_${key}`).classList.add('hidden')); document.getElementById(`check_${currentSortMethod}`).classList.remove('hidden'); }
+        function renderSidebar() { const list = document.getElementById('objectList'); list.innerHTML = objects.map(obj => ` <li onclick="switchObject(${obj.id})" class="sidebar-item cursor-pointer px-4 py-3 text-sm font-medium flex items-center gap-2 transition-colors ${obj.id === currentObjId ? 'active' : 'text-gray-600 hover:bg-gray-50'}"> <span class="w-1.5 h-1.5 rounded-full ${obj.id === currentObjId ? 'bg-blue-500' : 'bg-gray-300'}"></span> <span class="truncate">${obj.displayName}</span> </li> `).join(''); }
+        function switchObject(id) { currentObjId = id; renderSidebar(); renderMainContent(); }
+        function renderMainContent() { const obj = objects.find(o => o.id === currentObjId); if (!obj) { document.getElementById('headerTitle').innerText = '请选择数据对象'; return; } document.getElementById('headerTitle').innerText = obj.displayName; document.getElementById('headerNote').innerText = obj.note || '--'; document.getElementById('headerCreateTime').innerText = formatTime(obj.createTime); document.getElementById('headerUpdateTime').innerText = formatTime(obj.updateTime); renderFieldTable(); }
+        function renderFieldTable() { const searchVal = document.getElementById('searchInput').value.toLowerCase(); const currentFields = fields[currentObjId] || []; const filtered = currentFields.filter(f => f.name.toLowerCase().includes(searchVal) || f.displayName.toLowerCase().includes(searchVal)); const tbody = document.getElementById('fieldTableBody'); const emptyState = document.getElementById('emptyState'); if (filtered.length === 0) { tbody.innerHTML = ''; emptyState.classList.remove('hidden'); emptyState.classList.add('flex'); } else { emptyState.classList.add('hidden'); emptyState.classList.remove('flex'); tbody.innerHTML = filtered.map(f => { let typeClass = "bg-gray-100 text-gray-700"; if (f.type === 'number') typeClass = "bg-blue-50 text-blue-700"; if (f.type === 'date') typeClass = "bg-green-50 text-green-700"; const noteHtml = f.note ? `<div class="relative group max-w-xs"><p id="desc-${f.id}" class="line-clamp-2 text-gray-500 leading-relaxed text-xs" title="${f.note}">${f.note}</p><button onclick="toggleDesc(${f.id})" class="text-xs text-blue-600 hover:text-blue-800 mt-0.5">展开</button></div>` : '<span class="text-gray-300">--</span>'; return ` <tr class="hover:bg-blue-50/30 group border-b border-gray-50 transition-colors"> <td class="px-4 py-2.5 font-mono text-gray-600 text-xs">${f.name}</td> <td class="px-4 py-2.5 font-bold text-gray-800">${f.displayName}</td> <td class="px-4 py-2.5"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${typeClass} capitalize border border-transparent">${f.type}</span></td> <td class="px-4 py-2.5 text-sm min-w-[200px]">${noteHtml}</td> <td class="px-4 py-2.5 text-gray-500 text-xs font-mono">${formatTime(f.createTime)}</td> <td class="px-4 py-2.5 text-gray-500 text-xs font-mono">${formatTime(f.updateTime)}</td> <td class="px-4 py-2.5 text-right w-36"> <div class="flex flex-wrap justify-end gap-x-3 gap-y-1"> <button onclick="openModal('fieldModal', 'edit', ${f.id})" class="text-blue-600 hover:underline text-sm font-medium flex items-center gap-1"><i class="ph-bold ph-pencil-simple"></i>编辑</button> <button onclick="handleDeleteField(${f.id})" class="text-red-500 hover:underline text-sm font-medium flex items-center gap-1"><i class="ph-bold ph-trash"></i>删除</button> </div> </td> </tr> `}).join(''); } }
+        function formatTime(timestamp) { if (!timestamp) return '<span class="text-gray-300">--</span>'; const d = new Date(timestamp); const pad = (n) => n.toString().padStart(2, '0'); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
+        function toggleDesc(id) { const p = document.getElementById(`desc-${id}`); p.classList.toggle('line-clamp-2'); event.target.innerText = p.classList.contains('line-clamp-2') ? '展开' : '收起'; }
+        function openModal(modalId, mode, itemId = null) { currentModalMode = mode; const modal = document.getElementById(modalId); modal.classList.remove('hidden'); modal.querySelectorAll('input, textarea, select').forEach(el => { el.value = ''; el.disabled = false; }); if (modalId === 'objectModal') { const title = document.getElementById('objectModalTitle'); if (mode === 'create') { title.innerText = '新增数据对象'; } else { title.innerText = '编辑数据对象'; const obj = objects.find(o => o.id === currentObjId); const nameInput = document.getElementById('objNameInput'); nameInput.value = obj.name; nameInput.disabled = true; document.getElementById('objDisplayInput').value = obj.displayName; document.getElementById('objNoteInput').value = obj.note; } } else if (modalId === 'fieldModal') { const title = document.getElementById('fieldModalTitle'); document.getElementById('fieldTypeInput').selectedIndex = 0; if (mode === 'create') { title.innerText = '新增字段'; } else { title.innerText = '编辑字段'; const f = fields[currentObjId].find(item => item.id === itemId); currentEditingItem = f; const nameInput = document.getElementById('fieldNameInput'); nameInput.value = f.name; nameInput.disabled = true; document.getElementById('fieldDisplayInput').value = f.displayName; const typeSelect = document.getElementById('fieldTypeInput'); typeSelect.value = f.type; typeSelect.disabled = true; document.getElementById('fieldNoteInput').value = f.note; } } initCounters(modalId); }
+        function closeModal(modalId) { document.getElementById(modalId).classList.add('hidden'); }
+        function closeConfirm() { document.getElementById('confirmModal').classList.add('hidden'); }
+        function saveObject() { const nameInput = document.getElementById('objNameInput'); const displayInput = document.getElementById('objDisplayInput'); const name = nameInput.value.trim(); const displayName = displayInput.value.trim(); const note = document.getElementById('objNoteInput').value.trim(); let isValid = true; if (!name || !validators.objectName(name)) { nameInput.classList.add('input-error'); document.getElementById('err-objName').classList.add('show-error'); isValid = false; } if (!displayName || !validators.displayName(displayName)) { displayInput.classList.add('input-error'); document.getElementById('err-objDisplay').classList.add('show-error'); isValid = false; } if (!isValid) return showToast('请修正红框中的错误', 'error'); if (currentModalMode === 'create') { if (objects.some(o => o.name === name)) return showToast('对象名称已存在', 'error'); const newId = Date.now(); objects.push({ id: newId, name, displayName, note, isUsed: false, createTime: newId, updateTime: newId }); fields[newId] = []; sortObjects(); switchObject(newId); } else { const obj = objects.find(o => o.id === currentObjId); if (objects.some(o => o.id !== currentObjId && o.displayName === displayName)) return showToast('显示名称重复', 'error'); obj.displayName = displayName; obj.note = note; obj.updateTime = Date.now(); sortObjects(); renderMainContent(); } renderSidebar(); closeModal('objectModal'); showToast('保存成功'); }
+        function saveField() { const nameInput = document.getElementById('fieldNameInput'); const displayInput = document.getElementById('fieldDisplayInput'); const name = nameInput.value.trim(); const displayName = displayInput.value.trim(); const type = document.getElementById('fieldTypeInput').value; const note = document.getElementById('fieldNoteInput').value.trim(); let isValid = true; if (!displayName || !validators.displayName(displayName)) { displayInput.classList.add('input-error'); document.getElementById('err-fieldDisplay').classList.add('show-error'); isValid = false; } if (currentModalMode === 'create') { if (!name || !validators.objectName(name)) { nameInput.classList.add('input-error'); document.getElementById('err-fieldName').classList.add('show-error'); isValid = false; } } if (!isValid) return showToast('请修正错误', 'error'); if (currentModalMode === 'create') { if (fields[currentObjId].some(f => f.name === name)) return showToast('字段名已存在', 'error'); fields[currentObjId].unshift({ id: Date.now(), name, displayName, type, note, createTime: Date.now(), updateTime: null, isUsed: false }); } else { currentEditingItem.displayName = displayName; currentEditingItem.note = note; currentEditingItem.updateTime = Date.now(); } renderFieldTable(); closeModal('fieldModal'); showToast('保存成功'); }
+        function handleDeleteObject() { const obj = objects.find(o => o.id === currentObjId); if (obj.isUsed) return showToast(`对象正被引用，无法删除`, 'error'); document.getElementById('confirmText').innerText = `确认删除对象 "${obj.displayName}" 吗？`; document.getElementById('confirmBtn').onclick = () => { objects = objects.filter(o => o.id !== currentObjId); delete fields[currentObjId]; if(objects.length > 0) switchObject(objects[0].id); else { currentObjId = null; renderSidebar(); document.getElementById('headerTitle').innerText='--'; document.getElementById('fieldTableBody').innerHTML=''; } closeConfirm(); showToast('删除成功'); }; document.getElementById('confirmModal').classList.remove('hidden'); }
+        function handleDeleteField(fieldId) { const f = fields[currentObjId].find(item => item.id === fieldId); if (f.isUsed) return showToast(`字段正被引用，无法删除`, 'error'); document.getElementById('confirmText').innerText = `确认删除字段 "${f.displayName}" 吗？`; document.getElementById('confirmBtn').onclick = () => { fields[currentObjId] = fields[currentObjId].filter(item => item.id !== fieldId); renderFieldTable(); closeConfirm(); showToast('删除成功'); }; document.getElementById('confirmModal').classList.remove('hidden'); }
+        function showToast(msg, type = 'success') { const toast = document.getElementById('toast'); const icon = document.getElementById('toastIcon'); icon.className = type === 'error' ? 'ph-fill ph-warning-circle text-lg text-red-400' : 'ph-fill ph-check-circle text-lg text-green-400'; document.getElementById('toastMsg').innerText = msg; toast.classList.remove('opacity-0', 'translate-y-[-20px]'); setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-[-20px]'); }, 2500); }
+    </script>
+</body>
+</html>
