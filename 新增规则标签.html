@@ -113,7 +113,7 @@
                     </div>
                 </div>
                 <!-- Type -->
-                <div class="grid grid-cols-12 gap-4 items-center">
+<!--                 <div class="grid grid-cols-12 gap-4 items-center">
                     <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span class="text-red-500 mr-1">*</span>标签保存类型：</label>
                     <div class="col-span-8 flex gap-6">
                         <label class="flex items-center gap-2 cursor-pointer relative group">
@@ -125,9 +125,68 @@
                             <span class="text-sm">多值</span>
                         </label>
                     </div>
+                </div> -->
+                <div class="grid grid-cols-12 gap-4 items-center">
+                    <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span class="text-red-500 mr-1">*</span>标签保存类型：</label>
+                    <div class="col-span-8 flex gap-6">
+                        <label class="flex items-center gap-2 cursor-pointer relative group">
+                            <input type="radio" name="saveType" value="single" checked class="text-blue-600 focus:ring-blue-500" onchange="toggleUpdateType(this.value)">
+                            <span class="text-sm">单值</span>
+                            <i class="ph ph-info text-gray-400 text-xs"></i>
+                            <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">后续创建标签值tab的前后顺序作为优先级的判断保留</div>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer relative group">
+                            <input type="radio" name="saveType" value="multi" class="text-blue-600 focus:ring-blue-500" onchange="toggleUpdateType(this.value)">
+                            <span class="text-sm">多值</span>
+                            <i class="ph ph-info text-gray-400 text-xs"></i>
+                            <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">保留每个符合的标签值</div>
+                        </label>
+                    </div>
                 </div>
+
+                <div id="updateMethodContainer" class="grid grid-cols-12 gap-4 items-start hidden">
+                    <label class="col-span-2 text-right text-sm font-medium text-gray-700 mt-1"><span class="text-red-500 mr-1">*</span>标签更新方式：</label>
+                    <div class="col-span-8 flex gap-6">
+                        <!-- Option 1: Full -->
+                        <label class="flex items-center gap-2 cursor-pointer relative group">
+                            <input type="radio" name="saveType" value="single" checked class="text-blue-600 focus:ring-blue-500">
+                            <span class="text-sm">全量更新</span>
+                            <i class="ph ph-info text-gray-400 text-xs"></i>
+                            <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">不保存历史标签值，覆盖更新</div>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer relative group">
+                            <input type="radio" name="saveType" value="multi" class="text-blue-600 focus:ring-blue-500">
+                            <span class="text-sm">增量更新</span>
+                            <i class="ph ph-info text-gray-400 text-xs"></i>
+                            <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">只更新变动标签值</div>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Tag Mode -->
                 <div class="grid grid-cols-12 gap-4 items-center">
+                    <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span class="text-red-500 mr-1">*</span>标签类型：</label>
+                    <div class="col-span-8 flex gap-6">
+                        <label class="flex items-center gap-2 cursor-pointer relative group">
+                            <input type="radio" name="tagType" value="atomic" checked class="text-blue-600 focus:ring-blue-500">
+                            <span class="text-sm">原子标签</span>
+                            <i class="ph ph-info text-gray-400 text-xs"></i>
+                            <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">只能选择明细数据加工标签</div>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer relative group">
+                            <input type="radio" name="tagType" value="composite" class="text-blue-600 focus:ring-blue-500">
+                            <span class="text-sm">组合标签</span>
+                            <i class="ph ph-info text-gray-400 text-xs"></i>
+                            <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">可以选择明细数据和原子标签加工标签</div>
+                        </label>
+                    </div>
+                </div>
+
+                
+
+
+                <!-- Tag Mode -->
+                <!-- <div class="grid grid-cols-12 gap-4 items-center">
                     <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span class="text-red-500 mr-1">*</span>标签类型：</label>
                     <div class="col-span-8 flex gap-6">
                         <label class="flex items-center gap-2 cursor-pointer relative group">
@@ -139,7 +198,7 @@
                             <span class="text-sm">组合标签</span>
                         </label>
                     </div>
-                </div>
+                </div> -->
             </form>
             
             <div class="mt-10 flex justify-center">
@@ -192,6 +251,15 @@
         const opConfig = { string: { aggs: ['总次数', '去重次数'], direct: ['等于', '不等于', '包含', '不包含', '为空', '不为空'] }, number: { aggs: ['求和', '平均值', '最大值', '最小值'], direct: ['=', '>', '>=', '<', '<=', '区间', '为空', '不为空'] }, boolean: { aggs: [], direct: ['为真', '为假', '为空', '不为空'] } };
         let activeTabId = 1, tabCounter = 1, scrollToTabAfterRender = null, editingGroupId = null;
         let tabsData = { 1: { id: 1, name: '标签值1', desc: '', satisfyGroups: [{ id: 101, name: '条件分组1', relation: 'AND', rules: [{ type: 'detail', obj: 'invoice', field: 'total_amount', op1: '求和', op2: '>', val: '', filters: [] }] }], satisfyRelation: 'AND', excludeGroups: [], excludeRelation: 'OR' } };
+        // --- 关键逻辑：单值/多值联动 ---
+        function toggleUpdateType(value) {
+            const container = document.getElementById('updateMethodContainer');
+            if (value === 'multi') {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
         
         function updateCharCount(input, targetId) { document.getElementById(targetId).textContent = `${input.value.length}/${input.getAttribute('maxlength')}`; }
         function scrollTabs(direction) { const container = document.getElementById('tagValueTabsContainer'); if(direction === 'left') container.scrollLeft -= 200; else container.scrollLeft += 200; }
