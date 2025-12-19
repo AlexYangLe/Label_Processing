@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>标签详情</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f5f7fa; }</style>
+</head>
+<body class="h-screen flex flex-col text-gray-800">
+
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
+        <div class="h-14 bg-blue-600 text-white flex items-center px-6 shadow-sm">
+            <h1 class="text-lg font-bold">数据要素运营管理平台</h1>
+        </div>
+        <div class="h-12 flex items-center px-6 text-sm text-gray-500">
+            <a href="#" class="hover:text-blue-600"><i class="ph ph-caret-left mr-1"></i>返回列表</a>
+            <span class="mx-2">/</span>
+            <span>标签管理</span>
+            <span class="mx-2">/</span>
+            <span class="text-blue-600 font-medium">最后一次就诊医院</span>
+        </div>
+    </header>
+
+    <!-- <main class="flex-1 overflow-y-auto p-6 max-w-7xl mx-auto w-full space-y-6"> -->
+        
+        <!-- Basic Info -->
+        <section class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+                <h2 class="text-base font-bold text-gray-800 border-l-4 border-blue-600 pl-3">基础信息</h2>
+            </div>
+            <div class="grid grid-cols-3 gap-y-6 gap-x-8 text-sm">
+                <div><span class="block text-gray-500 mb-1">标签ID</span><div class="font-mono text-gray-700">user_tag_sfn_33_27482271</div></div>
+                <div><span class="block text-gray-500 mb-1">标签名称</span><div class="text-gray-900 font-medium">最后一次就诊医院</div></div>
+                <div>
+                    <span class="block text-gray-500 mb-1">状态</span>
+                    <span class="px-2.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 border border-green-200">已发布</span>
+                </div>
+                <div><span class="block text-gray-500 mb-1">标签目录</span><div class="text-gray-700">系统标签 / 用户行为</div></div>
+                <div><span class="block text-gray-500 mb-1">加工方式</span><div class="text-gray-700">首末次标签</div></div>
+                <div><span class="block text-gray-500 mb-1">创建人</span><div class="text-gray-700">张三</div></div>
+                <div><span class="block text-gray-500 mb-1">创建时间</span><div class="text-gray-700">2025-12-07 12:12:12</div></div>
+                <div><span class="block text-gray-500 mb-1">更新时间</span><div class="text-gray-700">2025-12-08 12:12:12</div></div>
+                <div class="col-span-3"><span class="block text-gray-500 mb-1">备注</span><div class="text-gray-700">该标签是用户画像最后一次的就诊情况，用于分析用户就医偏好。</div></div>
+            </div>
+        </section>
+
+        <!-- Rule Details -->
+        <section class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 class="text-base font-bold text-gray-800 border-l-4 border-blue-600 pl-3 mb-6">标签规则</h2>
+            
+            <div class="space-y-6">
+                <!-- Block 1 -->
+                <div>
+                    <h3 class="text-sm font-bold text-blue-600 mb-3 pl-2 border-l-2 border-blue-300">数据范围定义</h3>
+                    <div class="bg-gray-50 rounded border border-gray-200 p-4 grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-xs text-gray-500 block mb-1">时间范围</label>
+                            <div class="text-sm font-medium text-gray-800 bg-white border border-gray-200 px-3 py-2 rounded flex items-center gap-2">
+                                <i class="ph ph-calendar-blank"></i> 过去 30 天 | 2024-04-10 ~ 2025-05-10
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 block mb-1">数据对象 (仅限明细)</label>
+                            <div class="text-sm font-medium text-gray-800 bg-white border border-gray-200 px-3 py-2 rounded">
+                                票据事件数据
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Block 2 -->
+                <div>
+                    <h3 class="text-sm font-bold text-blue-600 mb-3 pl-2 border-l-2 border-blue-300">筛选条件</h3>
+                    <div class="bg-gray-50 rounded border border-gray-200 p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                             <span class="text-xs text-gray-400">条件 1</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="bg-white border border-gray-200 px-3 py-2 rounded text-sm text-gray-700 w-48">医院名称</div>
+                            <span class="text-xs text-gray-500">包含</span>
+                            <div class="bg-white border border-gray-200 px-3 py-2 rounded text-sm text-gray-700 flex-1">肿瘤</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Block 3 -->
+                <div>
+                    <h3 class="text-sm font-bold text-blue-600 mb-3 pl-2 border-l-2 border-blue-300">标签值定义</h3>
+                    <div class="bg-blue-50/50 rounded border border-blue-100 p-4">
+                        <div class="flex items-center gap-2 text-sm text-gray-700">
+                            <span>取符合上述条件数据的</span>
+                            <span class="px-2 py-1 bg-white border border-gray-200 rounded font-bold text-blue-700">末次发生</span>
+                            <span>的</span>
+                        </div>
+                        <div class="mt-3">
+                            <label class="text-xs text-gray-500 block mb-1">作为标签值：</label>
+                            <div class="bg-white border border-gray-200 px-3 py-2 rounded text-sm font-medium text-gray-800">
+                                医院名称 (hospital_name)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- History -->
+        <section class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 class="text-base font-bold text-gray-800 border-l-4 border-blue-600 pl-3 mb-4">版本历史</h2>
+            <!-- Reuse generic table structure -->
+            <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th class="px-6 py-3">版本</th><th class="px-6 py-3">时间</th><th class="px-6 py-3">操作人</th><th class="px-6 py-3">操作</th></tr></thead>
+                <tbody>
+                    <tr class="bg-white hover:bg-gray-50">
+                            <td class="px-6 py-4">V1.0</td>
+                            <td class="px-6 py-4">2024-08-10 09:30:00</td>
+                            <td class="px-6 py-4">张三</td>
+                            <td class="px-6 py-4"><button class="text-blue-600 hover:underline" onclick="openVersionModal('V1.0')">查看</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    <!-- </main> -->
+    <div id="versionModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onclick="closeVersionModal()"></div>
+        <div class="absolute right-0 top-0 h-full w-[700px] bg-white shadow-2xl flex flex-col transform transition-transform duration-300 translate-x-full" id="modalPanel">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-bold text-gray-800" id="modalTitle">版本详情: V1.0</h3>
+                <button onclick="closeVersionModal()" class="text-gray-400 hover:text-gray-600"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <!-- Modal Content -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-6 modal-scroll" id="modalContent">
+                <!-- Injected via JS -->
+            </div>
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end">
+                <button onclick="closeVersionModal()" class="px-4 py-2 border border-gray-300 rounded text-sm text-gray-600 hover:bg-white transition">关闭</button>
+            </div>
+        </div>
+    </div>
+        <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 bg-gray-800/90 text-white px-5 py-2.5 rounded shadow-xl transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none z-[80] flex items-center gap-2.5">
+        <i class="ph-fill ph-info text-lg text-blue-400"></i><span id="toastMsg" class="text-sm font-medium"></span>
+    </div>
+
+    <script>
+
+        // Modal Logic
+        function openVersionModal(version) {
+            const modal = document.getElementById('versionModal');
+            const panel = document.getElementById('modalPanel');
+            const title = document.getElementById('modalTitle');
+            const content = document.getElementById('modalContent');
+            
+            title.innerText = `版本详情: ${version}`;
+            
+            // Simulating API loading failure for demonstration of Edge Cases
+            if(version === 'ERROR_TEST') {
+                showToast('网络请求超时，请重试', 'error');
+                return;
+            }
+
+            // Simulate content injection (Snapshot of rules)
+            content.innerHTML = `
+            <section class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+                    <h2 class="text-base font-bold text-gray-800 border-l-4 border-blue-600 pl-3">基础信息</h2>
+                </div>
+                <div class="grid grid-cols-3 gap-y-6 gap-x-8 text-sm">
+                    <div><span class="block text-gray-500 mb-1">标签ID</span><div class="font-mono text-gray-700">user_tag_sfn_33_27482271</div></div>
+                    <div><span class="block text-gray-500 mb-1">标签名称</span><div class="text-gray-900 font-medium">最后一次就诊医院</div></div>
+                    <div>
+                        <span class="block text-gray-500 mb-1">状态</span>
+                        <span class="px-2.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 border border-green-200">已发布</span>
+                    </div>
+                    <div><span class="block text-gray-500 mb-1">标签目录</span><div class="text-gray-700">系统标签 / 用户行为</div></div>
+                    <div><span class="block text-gray-500 mb-1">加工方式</span><div class="text-gray-700">首末次标签</div></div>
+                    <div><span class="block text-gray-500 mb-1">标签类型</span><div class="text-gray-700">原子标签</div></div>
+                    <div><span class="block text-gray-500 mb-1">更新方式</span><div class="text-gray-700">全量更新</div></div>
+                    <div><span class="block text-gray-500 mb-1">创建人</span><div class="text-gray-700">张三</div></div>
+                    <div><span class="block text-gray-500 mb-1">创建时间</span><div class="text-gray-700">2025-12-07 12:12:12</div></div>
+                    <div><span class="block text-gray-500 mb-1">更新时间</span><div class="text-gray-700">2025-12-08 12:12:12</div></div>
+                    <div class="col-span-3"><span class="block text-gray-500 mb-1">备注</span><div class="text-gray-700">该标签是用户画像最后一次的就诊情况，用于分析用户就医偏好。</div></div>
+                </div>
+            </section>
+
+            <!-- Rule Details -->
+            <section class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 class="text-base font-bold text-gray-800 border-l-4 border-blue-600 pl-3 mb-6">标签规则</h2>
+                
+                <div class="space-y-6">
+                    <!-- Block 1 -->
+                    <div>
+                        <h3 class="text-sm font-bold text-blue-600 mb-3 pl-2 border-l-2 border-blue-300">数据范围定义</h3>
+                        <div class="bg-gray-50 rounded border border-gray-200 p-4 grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="text-xs text-gray-500 block mb-1">时间范围</label>
+                                <div class="text-sm font-medium text-gray-800 bg-white border border-gray-200 px-3 py-2 rounded flex items-center gap-2">
+                                    <i class="ph ph-calendar-blank"></i> 过去 30 天 | 2024-04-10 ~ 2025-05-10
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 block mb-1">数据对象 (仅限明细)</label>
+                                <div class="text-sm font-medium text-gray-800 bg-white border border-gray-200 px-3 py-2 rounded">
+                                    票据事件数据
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Block 2 -->
+                    <div>
+                        <h3 class="text-sm font-bold text-blue-600 mb-3 pl-2 border-l-2 border-blue-300">筛选条件</h3>
+                        <div class="bg-gray-50 rounded border border-gray-200 p-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                 <span class="text-xs text-gray-400">条件 1</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="bg-white border border-gray-200 px-3 py-2 rounded text-sm text-gray-700 w-48">医院名称</div>
+                                <span class="text-xs text-gray-500">包含</span>
+                                <div class="bg-white border border-gray-200 px-3 py-2 rounded text-sm text-gray-700 flex-1">肿瘤</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Block 3 -->
+                    <div>
+                        <h3 class="text-sm font-bold text-blue-600 mb-3 pl-2 border-l-2 border-blue-300">标签值定义</h3>
+                        <div class="bg-blue-50/50 rounded border border-blue-100 p-4">
+                            <div class="flex items-center gap-2 text-sm text-gray-700">
+                                <span>取符合上述条件数据的</span>
+                                <span class="px-2 py-1 bg-white border border-gray-200 rounded font-bold text-blue-700">末次发生</span>
+                                <span>的</span>
+                            </div>
+                            <div class="mt-3">
+                                <label class="text-xs text-gray-500 block mb-1">作为标签值：</label>
+                                <div class="bg-white border border-gray-200 px-3 py-2 rounded text-sm font-medium text-gray-800">
+                                    医院名称 (hospital_name)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            `;
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                panel.classList.remove('translate-x-full');
+            }, 10);
+        }
+
+        function closeVersionModal() {
+            const panel = document.getElementById('modalPanel');
+            const modal = document.getElementById('versionModal');
+            panel.classList.add('translate-x-full');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Toast Logic
+        function showToast(msg, type='info') {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            t.classList.remove('opacity-0', 'translate-y-[-20px]');
+            setTimeout(() => t.classList.add('opacity-0', 'translate-y-[-20px]'), 3000);
+        }
+    </script>
+</body>
+</html>

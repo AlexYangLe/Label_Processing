@@ -120,7 +120,7 @@
             <div class="space-y-8">
                 <!-- 1. 规则定义 -->
                 <div class="space-y-4">
-                    <h3 class="font-bold text-gray-800 text-sm border-l-4 border-blue-600 pl-2">聚合规则定义</h3>
+                    <h3 class="font-bold text-gray-800 text-sm border-l-4 border-blue-600 pl-2">数据范围定义</h3>
                     <div class="bg-gray-50 p-6 rounded border border-gray-200 space-y-6">
                         <div class="grid grid-cols-2 gap-6">
                             <div>
@@ -286,7 +286,7 @@
     </div>
 
     <script>
-        const dataSource = { 'invoice': { name: '票据事件数据', fields: [{ key: 'total_amount', name: '就诊总金额', type: 'number' }, { key: 'consultation_date', name: '就诊日期', type: 'date' }] }, 'detail': { name: '票据明细数据', fields: [{ key: 'item_price', name: '单价', type: 'number' }, { key: 'item_name', name: '项目名称', type: 'text' }] } };
+        const dataSource = { 'invoice': { name: '票据事件数据', fields: [{ key: 'total_amount', name: '就诊总金额', type: 'number' }, { key: 'consultation_date', name: '就诊日期', type: 'date' }, { key: 'hospital_name', name: '医院名称', type: 'text' }] }, 'detail': { name: '票据明细数据', fields: [{ key: 'item_price', name: '单价', type: 'number' }, { key: 'item_name', name: '项目名称', type: 'text' }] } };
         const aggRules = { 'number': ['求和', '平均值', '最大值', '最小值', '总次数', '去重计数'], 'text': ['总次数', '去重计数'], 'date': ['最大值 (最近)', '最小值 (最早)', '总次数', '去重计数'] };
         let filters = [{ field: '', op: '', val: '' }]; let filterRelation = 'AND'; let ranges = [ { label: '低价值', min: '-∞', max: '' }, { label: '高价值', min: '', max: '+∞' } ]; let currentResultType = 'number'; let currentDataObject = 'invoice'; let pendingDataObject = null; let currentMode = 'static'; let selectedStaticDate = new Date().toISOString().split('T')[0]; let selectedDynamicType = 'today'; let viewDate = new Date();
         function showTooltip(el, text) { const tooltip = document.getElementById('global-tooltip'); const rect = el.getBoundingClientRect(); tooltip.innerHTML = text; tooltip.style.display = 'block'; const top = rect.top - tooltip.offsetHeight - 8; const left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2); tooltip.style.top = `${top}px`; tooltip.style.left = `${left}px`; requestAnimationFrame(() => tooltip.style.opacity = '1'); }

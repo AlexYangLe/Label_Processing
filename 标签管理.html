@@ -209,7 +209,7 @@
                     <p class="text-xs text-gray-500 leading-relaxed h-12">提取用户在特定时间范围内，首次或最后一次完成某事件的时间、地点或属性值作为标签。</p>
                 </div>
                 <!-- 3. 统计标签跳转 -->
-                <div onclick="window.location.href='新增同级标签.html'" class="border border-gray-200 rounded-xl p-6 cursor-pointer hover:border-green-500 hover:shadow-lg transition group">
+                <div onclick="window.location.href='新增统计标签.html'" class="border border-gray-200 rounded-xl p-6 cursor-pointer hover:border-green-500 hover:shadow-lg transition group">
                     <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center text-green-600 mb-5 group-hover:bg-green-600 group-hover:text-white transition"><i class="ph-bold ph-chart-bar text-2xl"></i></div>
                     <h4 class="text-base font-bold text-gray-800 mb-2">统计标签</h4>
                     <p class="text-xs text-gray-500 leading-relaxed h-12">对事件数据进行聚合统计，如求和、计数、平均值等（例如：近30天消费总金额）。</p>
@@ -303,8 +303,8 @@
 
         let tags = [
             { id: 'tag_001', name: '用户性别_Gender', dirId: 11, dirPath: '系统标签/基础属性', method: '规则标签', type: '原子标签', status: '已发布', dataType: '文本型', note: '基于身份证解析', updateTime: '2025-11-28 10:00', refCount: 5, creator: 'admin' ,createTime: '2025-11-01 14:00:00', isNoteExpanded: false },
-            { id: 'tag_002', name: '近30天消费总额', dirId: 13, dirPath: '系统标签/交易特征', method: '统计标签', type: '原子标签', status: '待发布', dataType: '数值型', note: '是一段非常长的备注，用于测试换行和展开功能。用户在过去30天内所有支付成功的订单金额总和，不包含退款金额。', updateTime: '2025-11-28 09:30:00', refCount: 0, creator: 'zhangsan' ,createTime: '2025-11-01 14:00:00', isNoteExpanded: false },
-            { id: 'tag_003', name: '首次登录时间', dirId: 999, dirPath: '未分类', method: '首末次标签', type: '原子标签', status: '已下架', dataType: '日期时间型', note: '--', updateTime: '2025-11-25 14:00:00', refCount: 1, creator: 'admin' ,createTime: '2025-11-01 14:00:00', isNoteExpanded: false },
+            { id: 'tag_002', name: '最近就诊总花费', dirId: 13, dirPath: '系统标签/交易特征', method: '统计标签', type: '原子标签', status: '待发布', dataType: '数值型', note: '是一段非常长的备注，用于测试换行和展开功能。用户在过去30天内所有支付成功的订单金额总和，不包含退款金额。', updateTime: '2025-11-28 09:30:00', refCount: 0, creator: 'zhangsan' ,createTime: '2025-11-01 14:00:00', isNoteExpanded: false },
+            { id: 'tag_003', name: '最后一次就诊医院', dirId: 999, dirPath: '未分类', method: '首末次标签', type: '原子标签', status: '已下架', dataType: '日期时间型', note: '--', updateTime: '2025-11-25 14:00:00', refCount: 1, creator: 'admin' ,createTime: '2025-11-01 14:00:00', isNoteExpanded: false },
             // 添加一个测试递归筛选的数据
             { id: 'tag_004', name: '偏好品类', dirId: 21, dirPath: '营销标签/活动偏好', method: '规则标签', type: '原子标签', status: '已发布', dataType: '文本型', note: '', updateTime: '2025-11-25 14:00:00', refCount: 0, creator: 'admin' ,createTime: '2025-11-01 14:00:00', isNoteExpanded: false }
         ];
@@ -509,7 +509,8 @@
 
         function handleOfflineTag(name, ref) {
             // PRD 4.4 EC-05: 引用 > 0 警告文案
-            const warn = ref > 0 ? ` 该标签涉及 ${ref} 个业务引用，下架可能导致业务中断！` : '';
+            if (ref > 0) return showToast('当前标签正在被引用，无法下架', 'error');
+            const warn = ` 标签下架后，其他用户将无法使用`;
             confirmAction('offline', name, () => showToast('标签已下架'), warn);
         }
 
@@ -673,11 +674,17 @@
             const refLink = row.refCount > 0 
                 ? `<button onclick="openModal('refModal')" class="text-blue-600 font-bold hover:underline">${row.refCount}</button>`
                 : `<span class="text-gray-300">-</span>`;
+            
+            // 根据 method 字段决定跳转链接
+            let detailUrl = '#';
+            if (row.method === '规则标签') detailUrl = '标签详情_规则标签.html';
+            else if (row.method === '首末次标签') detailUrl = '标签详情_首末次标签.html';
+            else if (row.method === '统计标签') detailUrl = '标签详情_统计标签.html';
 
             return `
                 <tr class="group border-b border-gray-50 hover:bg-blue-50/20 transition-colors text-[13px]">
                     <td class="px-4 py-3 font-mono text-gray-500">${row.id}</td>
-                    <td class="px-4 py-3"><a href="#" class="text-blue-600 font-medium hover:underline">${row.name}</a></td>
+                    <td class="px-4 py-3"><a href="${detailUrl}" class="text-blue-600 font-medium hover:underline">${row.name}</a></td>
                     <td class="px-4 py-3 text-gray-600">${row.dirPath}</td>
                     <td class="px-4 py-3 text-gray-600">${row.method}</td>
                     <td class="px-4 py-3 text-gray-600">${row.type}</td>
