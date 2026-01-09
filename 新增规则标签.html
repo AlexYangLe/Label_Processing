@@ -7,296 +7,863 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f5f7fa; }
-        .step-active { @apply bg-blue-600 text-white border-blue-600; }
-        .step-inactive { @apply bg-white text-gray-500 border-gray-300; }
-        .tab-item.active { @apply border-t-2 border-t-blue-600 bg-white text-blue-600 font-bold border-x border-x-gray-200 border-b-transparent -mb-[1px]; }
-        .tab-item.inactive { @apply bg-gray-50 text-gray-600 hover:bg-gray-100 border border-transparent border-b-gray-200; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .input-error { @apply border-red-500 focus:border-red-500 focus:ring-red-500; }
-        .logic-rail { position: absolute; top: 20px; bottom: 20px; left: 24px; width: 1px; background-color: #e5e7eb; z-index: 0; }
-        .logic-connector-btn { 
-            position: absolute; left: 14px; top: 50%; transform: translateY(-50%); 
-            z-index: 10; cursor: pointer; width: 22px; height: 22px; border-color: #2563eb;
-            border-radius: 4px; border: 1px solid #d1d5db; background-color: #eff6ff; 
-            color: #2563eb; font-size: 10px; display: flex; align-items: center; justify-content: center;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f7fa;
         }
-        .logic-connector-btn.active { color: #2563eb; border-color: #2563eb; background-color: #eff6ff; font-weight: bold; }
-        .tree-select-dropdown { max-height: 200px; overflow-y: auto; position: absolute; z-index: 50; width: 100%; background: white; border: 1px solid #e5e7eb; border-radius: 0.375rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); display: none; }
-        .tree-node { padding: 6px 12px; cursor: pointer; display: flex; align-items: center; font-size: 14px; }
-        .tree-node:hover { background-color: #f3f4f6; color: #2563eb; }
-        .indent-1 { padding-left: 12px; }
-        .indent-2 { padding-left: 24px; }
+
+        .step-active {
+            @apply bg-blue-600 text-white border-blue-600;
+        }
+
+        .step-inactive {
+            @apply bg-white text-gray-500 border-gray-300;
+        }
+
+        .tab-item.active {
+            @apply border-t-2 border-t-blue-600 bg-white text-blue-600 font-bold border-x border-x-gray-200 border-b-transparent -mb-[1px];
+        }
+
+        .tab-item.inactive {
+            @apply bg-gray-50 text-gray-600 hover:bg-gray-100 border border-transparent border-b-gray-200;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .input-error {
+            @apply border-red-500 focus:border-red-500 focus:ring-red-500;
+        }
+
+        .logic-rail {
+            position: absolute;
+            top: 20px;
+            bottom: 20px;
+            left: 24px;
+            width: 1px;
+            background-color: #e5e7eb;
+            z-index: 0;
+        }
+
+        .logic-connector-btn {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            cursor: pointer;
+            width: 22px;
+            height: 22px;
+            border-color: #2563eb;
+            border-radius: 4px;
+            border: 1px solid #d1d5db;
+            background-color: #eff6ff;
+            color: #2563eb;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logic-connector-btn.active {
+            color: #2563eb;
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            font-weight: bold;
+        }
+
+        .tree-select-dropdown {
+            max-height: 200px;
+            overflow-y: auto;
+            position: absolute;
+            z-index: 50;
+            width: 100%;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .tree-node {
+            padding: 6px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .tree-node:hover {
+            background-color: #f3f4f6;
+            color: #2563eb;
+        }
+
+        .indent-1 {
+            padding-left: 12px;
+        }
+
+        .indent-2 {
+            padding-left: 24px;
+        }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden text-gray-800">
 
-    <!-- Header -->
-    <header class="h-14 bg-blue-600 text-white flex items-center justify-between px-6 shadow-md flex-shrink-0 z-20">
-        <div class="flex items-center gap-3">
-            <i class="ph-fill ph-circles-three-plus text-2xl"></i>
-            <h1 class="text-lg font-bold tracking-wide">数据要素运营管理平台</h1>
-            <span class="opacity-50">|</span>
-            <span class="text-sm opacity-90">控制台</span>
-        </div>
-    </header>
+<!-- Header -->
+<header class="h-14 bg-blue-600 text-white flex items-center justify-between px-6 shadow-md flex-shrink-0 z-20">
+    <div class="flex items-center gap-3">
+        <i class="ph-fill ph-circles-three-plus text-2xl"></i>
+        <h1 class="text-lg font-bold tracking-wide">数据要素运营管理平台</h1>
+        <span class="opacity-50">|</span>
+        <span class="text-sm opacity-90">控制台</span>
+    </div>
+</header>
 
-    <!-- Breadcrumb (Updated Link) -->
-    <div class="h-12 bg-white border-b border-gray-200 flex items-center px-6 text-sm text-gray-500 flex-shrink-0">
-        <button class="hover:text-blue-600 mr-2" onclick="window.location.href='标签管理.html'"><i class="ph ph-caret-left"></i></button>
-        <a href="标签管理.html" class="cursor-pointer hover:text-blue-600">标签管理</a>
-        <span class="mx-2">/</span>
-        <span class="text-blue-600 font-medium">新建规则标签</span>
+<!-- Breadcrumb (Updated Link) -->
+<div class="h-12 bg-white border-b border-gray-200 flex items-center px-6 text-sm text-gray-500 flex-shrink-0">
+    <button class="hover:text-blue-600 mr-2" onclick="window.location.href='标签管理.html'"><i
+            class="ph ph-caret-left"></i></button>
+    <a href="标签管理.html" class="cursor-pointer hover:text-blue-600">标签管理</a>
+    <span class="mx-2">/</span>
+    <span class="text-blue-600 font-medium">新建规则标签</span>
+</div>
+
+<!-- Main -->
+<main class="flex-1 overflow-y-auto p-6 flex flex-col items-center bg-gray-50">
+
+    <!-- Steps -->
+    <div class="w-full max-w-5xl mb-8 mt-2">
+        <div class="flex items-center justify-center space-x-4">
+            <div class="flex items-center">
+                <div id="step1-icon"
+                     class="w-8 h-8 rounded-full flex items-center justify-center border-2 text-sm font-bold step-active transition-colors">
+                    1
+                </div>
+                <span id="step1-text" class="ml-2 font-medium text-gray-800">配置基础信息</span>
+            </div>
+            <div class="w-32 h-0.5 bg-gray-200"></div>
+            <div class="flex items-center">
+                <div id="step2-icon"
+                     class="w-8 h-8 rounded-full flex items-center justify-center border-2 text-sm font-bold step-inactive transition-colors">
+                    2
+                </div>
+                <span id="step2-text" class="ml-2 font-medium text-gray-400">标签规则</span>
+            </div>
+        </div>
     </div>
 
-    <!-- Main -->
-    <main class="flex-1 overflow-y-auto p-6 flex flex-col items-center bg-gray-50">
-        
-        <!-- Steps -->
-        <div class="w-full max-w-5xl mb-8 mt-2">
-            <div class="flex items-center justify-center space-x-4">
-                <div class="flex items-center">
-                    <div id="step1-icon" class="w-8 h-8 rounded-full flex items-center justify-center border-2 text-sm font-bold step-active transition-colors">1</div>
-                    <span id="step1-text" class="ml-2 font-medium text-gray-800">配置基础信息</span>
-                </div>
-                <div class="w-32 h-0.5 bg-gray-200"></div>
-                <div class="flex items-center">
-                    <div id="step2-icon" class="w-8 h-8 rounded-full flex items-center justify-center border-2 text-sm font-bold step-inactive transition-colors">2</div>
-                    <span id="step2-text" class="ml-2 font-medium text-gray-400">标签规则</span>
+    <!-- Step 1: Basic Info -->
+    <div id="step1-content" class="w-full max-w-4xl bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+        <form id="basicInfoForm" class="space-y-6">
+            <!-- ID -->
+            <div class="grid grid-cols-12 gap-4 items-center">
+                <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span
+                        class="text-red-500 mr-1">*</span>标签ID：</label>
+                <div class="col-span-8">
+                    <input type="text" value="系统自动生成" disabled
+                           class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-sm text-gray-500 cursor-not-allowed">
                 </div>
             </div>
+            <!-- Name -->
+            <div class="grid grid-cols-12 gap-4 items-start">
+                <label class="col-span-2 text-right text-sm font-medium text-gray-700 mt-2"><span
+                        class="text-red-500 mr-1">*</span>标签名称：</label>
+                <div class="col-span-8">
+                    <div class="relative">
+                        <input type="text" id="tagName"
+                               class="w-full pl-3 pr-16 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                               placeholder="默认支持汉字、字母、数字、下划线" maxlength="50"
+                               oninput="clearError('tagName')">
+                        <span class="absolute right-3 top-2.5 text-xs text-gray-400 pointer-events-none">0/50</span>
+                    </div>
+                    <p id="tagName-error" class="text-red-500 text-xs mt-1 hidden">请输入标签名称</p>
+                </div>
+            </div>
+            <!-- Directory -->
+            <div class="grid grid-cols-12 gap-4 items-center relative">
+                <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span
+                        class="text-red-500 mr-1">*</span>标签目录：</label>
+                <div class="col-span-8 relative">
+                    <div class="w-full px-3 py-2 border border-gray-300 rounded text-sm cursor-pointer bg-white flex justify-between items-center"
+                         onclick="toggleTreeDropdown()">
+                        <span id="selectedDirName" class="text-gray-700">未分类</span>
+                        <i class="ph ph-caret-down text-gray-400"></i>
+                    </div>
+                    <input type="hidden" id="tagDir" value="999">
+                    <div id="treeDropdown" class="tree-select-dropdown">
+                        <!-- Tree JS -->
+                    </div>
+                    <p id="tagDir-error" class="text-red-500 text-xs mt-1 hidden">请选择标签目录</p>
+                </div>
+            </div>
+            <!-- Desc -->
+            <div class="grid grid-cols-12 gap-4 items-start">
+                <label class="col-span-2 text-right text-sm font-medium text-gray-700 mt-2">描述：</label>
+                <div class="col-span-8 relative">
+                    <textarea
+                            class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none h-32"
+                            placeholder="请输入标签的描述" maxlength="300"></textarea>
+                    <span class="absolute right-3 bottom-2 text-xs text-gray-400">0/300</span>
+                </div>
+            </div>
+            <!-- Type -->
+            <!--                 <div class="grid grid-cols-12 gap-4 items-center">
+                                <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span class="text-red-500 mr-1">*</span>标签保存类型：</label>
+                                <div class="col-span-8 flex gap-6">
+                                    <label class="flex items-center gap-2 cursor-pointer relative group">
+                                        <input type="radio" name="saveType" value="single" checked class="text-blue-600 focus:ring-blue-500">
+                                        <span class="text-sm">单值</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer relative group">
+                                        <input type="radio" name="saveType" value="multi" class="text-blue-600 focus:ring-blue-500">
+                                        <span class="text-sm">多值</span>
+                                    </label>
+                                </div>
+                            </div> -->
+            <div class="grid grid-cols-12 gap-4 items-center">
+                <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span
+                        class="text-red-500 mr-1">*</span>标签保存类型：</label>
+                <div class="col-span-8 flex gap-6">
+                    <label class="flex items-center gap-2 cursor-pointer relative group">
+                        <input type="radio" name="saveType" value="single" checked
+                               class="text-blue-600 focus:ring-blue-500" onchange="toggleUpdateType(this.value)">
+                        <span class="text-sm">单值</span>
+                        <i class="ph ph-info text-gray-400 text-xs"></i>
+                        <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">
+                            后续创建标签值tab的前后顺序作为优先级的判断保留
+                        </div>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer relative group">
+                        <input type="radio" name="saveType" value="multi" class="text-blue-600 focus:ring-blue-500"
+                               onchange="toggleUpdateType(this.value)">
+                        <span class="text-sm">多值</span>
+                        <i class="ph ph-info text-gray-400 text-xs"></i>
+                        <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">
+                            保留每个符合的标签值
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div id="updateMethodContainer" class="grid grid-cols-12 gap-4 items-start hidden">
+                <label class="col-span-2 text-right text-sm font-medium text-gray-700 mt-1"><span
+                        class="text-red-500 mr-1">*</span>标签更新方式：</label>
+                <div class="col-span-8 flex gap-6">
+                    <!-- Option 1: Full -->
+                    <label class="flex items-center gap-2 cursor-pointer relative group">
+                        <input type="radio" name="saveType" value="single" checked
+                               class="text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm">全量更新</span>
+                        <i class="ph ph-info text-gray-400 text-xs"></i>
+                        <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">
+                            不保存历史标签值，覆盖更新
+                        </div>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer relative group">
+                        <input type="radio" name="saveType" value="multi" class="text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm">增量更新</span>
+                        <i class="ph ph-info text-gray-400 text-xs"></i>
+                        <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">
+                            只更新变动标签值
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Tag Mode -->
+            <div class="grid grid-cols-12 gap-4 items-center">
+                <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span
+                        class="text-red-500 mr-1">*</span>标签类型：</label>
+                <div class="col-span-8 flex gap-6">
+                    <label class="flex items-center gap-2 cursor-pointer relative group">
+                        <input type="radio" name="tagType" value="atomic" checked
+                               class="text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm">原子标签</span>
+                        <i class="ph ph-info text-gray-400 text-xs"></i>
+                        <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">
+                            只能选择明细数据加工标签
+                        </div>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer relative group">
+                        <input type="radio" name="tagType" value="composite" class="text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm">组合标签</span>
+                        <i class="ph ph-info text-gray-400 text-xs"></i>
+                        <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">
+                            可以选择明细数据和原子标签加工标签
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Tag Mode -->
+            <!-- <div class="grid grid-cols-12 gap-4 items-center">
+                <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span class="text-red-500 mr-1">*</span>标签类型：</label>
+                <div class="col-span-8 flex gap-6">
+                    <label class="flex items-center gap-2 cursor-pointer relative group">
+                        <input type="radio" name="tagType" value="atomic" checked class="text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm">原子标签</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer relative group">
+                        <input type="radio" name="tagType" value="composite" class="text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm">组合标签</span>
+                    </label>
+                </div>
+            </div> -->
+        </form>
+
+        <div class="mt-10 flex justify-center">
+            <button onclick="validateAndNext()"
+                    class="px-8 py-2.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition shadow-sm">
+                下一步
+            </button>
         </div>
+    </div>
 
-        <!-- Step 1: Basic Info -->
-        <div id="step1-content" class="w-full max-w-4xl bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-            <form id="basicInfoForm" class="space-y-6">
-                <!-- ID -->
-                <div class="grid grid-cols-12 gap-4 items-center">
-                    <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span class="text-red-500 mr-1">*</span>标签ID：</label>
-                    <div class="col-span-8">
-                        <input type="text" value="系统自动生成" disabled class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-sm text-gray-500 cursor-not-allowed">
-                    </div>
-                </div>
-                <!-- Name -->
-                <div class="grid grid-cols-12 gap-4 items-start">
-                    <label class="col-span-2 text-right text-sm font-medium text-gray-700 mt-2"><span class="text-red-500 mr-1">*</span>标签名称：</label>
-                    <div class="col-span-8">
-                        <div class="relative">
-                            <input type="text" id="tagName" class="w-full pl-3 pr-16 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="默认支持汉字、字母、数字、下划线" maxlength="50" oninput="clearError('tagName')">
-                            <span class="absolute right-3 top-2.5 text-xs text-gray-400 pointer-events-none">0/50</span>
-                        </div>
-                        <p id="tagName-error" class="text-red-500 text-xs mt-1 hidden">请输入标签名称</p>
-                    </div>
-                </div>
-                <!-- Directory -->
-                <div class="grid grid-cols-12 gap-4 items-center relative">
-                    <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span class="text-red-500 mr-1">*</span>标签目录：</label>
-                    <div class="col-span-8 relative">
-                        <div class="w-full px-3 py-2 border border-gray-300 rounded text-sm cursor-pointer bg-white flex justify-between items-center" onclick="toggleTreeDropdown()">
-                            <span id="selectedDirName" class="text-gray-700">未分类</span>
-                            <i class="ph ph-caret-down text-gray-400"></i>
-                        </div>
-                        <input type="hidden" id="tagDir" value="999">
-                        <div id="treeDropdown" class="tree-select-dropdown">
-                            <!-- Tree JS -->
-                        </div>
-                        <p id="tagDir-error" class="text-red-500 text-xs mt-1 hidden">请选择标签目录</p>
-                    </div>
-                </div>
-                <!-- Desc -->
-                <div class="grid grid-cols-12 gap-4 items-start">
-                    <label class="col-span-2 text-right text-sm font-medium text-gray-700 mt-2">描述：</label>
-                    <div class="col-span-8 relative">
-                        <textarea class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none h-32" placeholder="请输入标签的描述" maxlength="300"></textarea>
-                        <span class="absolute right-3 bottom-2 text-xs text-gray-400">0/300</span>
-                    </div>
-                </div>
-                <!-- Type -->
-<!--                 <div class="grid grid-cols-12 gap-4 items-center">
-                    <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span class="text-red-500 mr-1">*</span>标签保存类型：</label>
-                    <div class="col-span-8 flex gap-6">
-                        <label class="flex items-center gap-2 cursor-pointer relative group">
-                            <input type="radio" name="saveType" value="single" checked class="text-blue-600 focus:ring-blue-500">
-                            <span class="text-sm">单值</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer relative group">
-                            <input type="radio" name="saveType" value="multi" class="text-blue-600 focus:ring-blue-500">
-                            <span class="text-sm">多值</span>
-                        </label>
-                    </div>
-                </div> -->
-                <div class="grid grid-cols-12 gap-4 items-center">
-                    <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span class="text-red-500 mr-1">*</span>标签保存类型：</label>
-                    <div class="col-span-8 flex gap-6">
-                        <label class="flex items-center gap-2 cursor-pointer relative group">
-                            <input type="radio" name="saveType" value="single" checked class="text-blue-600 focus:ring-blue-500" onchange="toggleUpdateType(this.value)">
-                            <span class="text-sm">单值</span>
-                            <i class="ph ph-info text-gray-400 text-xs"></i>
-                            <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">后续创建标签值tab的前后顺序作为优先级的判断保留</div>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer relative group">
-                            <input type="radio" name="saveType" value="multi" class="text-blue-600 focus:ring-blue-500" onchange="toggleUpdateType(this.value)">
-                            <span class="text-sm">多值</span>
-                            <i class="ph ph-info text-gray-400 text-xs"></i>
-                            <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">保留每个符合的标签值</div>
-                        </label>
-                    </div>
-                </div>
-
-                <div id="updateMethodContainer" class="grid grid-cols-12 gap-4 items-start hidden">
-                    <label class="col-span-2 text-right text-sm font-medium text-gray-700 mt-1"><span class="text-red-500 mr-1">*</span>标签更新方式：</label>
-                    <div class="col-span-8 flex gap-6">
-                        <!-- Option 1: Full -->
-                        <label class="flex items-center gap-2 cursor-pointer relative group">
-                            <input type="radio" name="saveType" value="single" checked class="text-blue-600 focus:ring-blue-500">
-                            <span class="text-sm">全量更新</span>
-                            <i class="ph ph-info text-gray-400 text-xs"></i>
-                            <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">不保存历史标签值，覆盖更新</div>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer relative group">
-                            <input type="radio" name="saveType" value="multi" class="text-blue-600 focus:ring-blue-500">
-                            <span class="text-sm">增量更新</span>
-                            <i class="ph ph-info text-gray-400 text-xs"></i>
-                            <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">只更新变动标签值</div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Tag Mode -->
-                <div class="grid grid-cols-12 gap-4 items-center">
-                    <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span class="text-red-500 mr-1">*</span>标签类型：</label>
-                    <div class="col-span-8 flex gap-6">
-                        <label class="flex items-center gap-2 cursor-pointer relative group">
-                            <input type="radio" name="tagType" value="atomic" checked class="text-blue-600 focus:ring-blue-500">
-                            <span class="text-sm">原子标签</span>
-                            <i class="ph ph-info text-gray-400 text-xs"></i>
-                            <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">只能选择明细数据加工标签</div>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer relative group">
-                            <input type="radio" name="tagType" value="composite" class="text-blue-600 focus:ring-blue-500">
-                            <span class="text-sm">组合标签</span>
-                            <i class="ph ph-info text-gray-400 text-xs"></i>
-                            <div class="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-50">可以选择明细数据和原子标签加工标签</div>
-                        </label>
-                    </div>
-                </div>
-
-                
-
-
-                <!-- Tag Mode -->
-                <!-- <div class="grid grid-cols-12 gap-4 items-center">
-                    <label class="col-span-2 text-right text-sm font-medium text-gray-700"><span class="text-red-500 mr-1">*</span>标签类型：</label>
-                    <div class="col-span-8 flex gap-6">
-                        <label class="flex items-center gap-2 cursor-pointer relative group">
-                            <input type="radio" name="tagType" value="atomic" checked class="text-blue-600 focus:ring-blue-500">
-                            <span class="text-sm">原子标签</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer relative group">
-                            <input type="radio" name="tagType" value="composite" class="text-blue-600 focus:ring-blue-500">
-                            <span class="text-sm">组合标签</span>
-                        </label>
-                    </div>
-                </div> -->
-            </form>
-            
-            <div class="mt-10 flex justify-center">
-                <button onclick="validateAndNext()" class="px-8 py-2.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition shadow-sm">下一步</button>
+    <!-- Step 2: Rules -->
+    <div id="step2-content"
+         class="w-full max-w-[1280px] bg-white rounded-lg shadow-sm border border-gray-200 hidden flex-col h-[calc(100vh-180px)]">
+        <div class="flex items-center border-b border-gray-200 px-2 bg-gray-50 flex-shrink-0 pt-2">
+            <button class="p-2 hover:bg-gray-200 rounded text-gray-500" onclick="scrollTabs('left')"><i
+                    class="ph ph-caret-left"></i></button>
+            <div class="flex-1 overflow-x-auto hide-scrollbar flex items-end space-x-2 px-2" id="tagValueTabsContainer">
+                <!-- JS Tabs -->
             </div>
+            <button class="p-2 hover:bg-gray-200 rounded text-gray-500" onclick="scrollTabs('right')"><i
+                    class="ph ph-caret-right"></i></button>
+            <div class="h-6 w-[1px] bg-gray-300 mx-2"></div>
+            <button class="p-2 text-blue-600 hover:bg-blue-50 rounded flex items-center gap-1 text-sm font-medium mr-2 mb-1"
+                    onclick="addNewTagValue()">
+                <i class="ph ph-plus"></i> 新增
+            </button>
         </div>
-
-        <!-- Step 2: Rules -->
-        <div id="step2-content" class="w-full max-w-[1280px] bg-white rounded-lg shadow-sm border border-gray-200 hidden flex-col h-[calc(100vh-180px)]">
-            <div class="flex items-center border-b border-gray-200 px-2 bg-gray-50 flex-shrink-0 pt-2">
-                <button class="p-2 hover:bg-gray-200 rounded text-gray-500" onclick="scrollTabs('left')"><i class="ph ph-caret-left"></i></button>
-                <div class="flex-1 overflow-x-auto hide-scrollbar flex items-end space-x-2 px-2" id="tagValueTabsContainer">
-                    <!-- JS Tabs -->
-                </div>
-                <button class="p-2 hover:bg-gray-200 rounded text-gray-500" onclick="scrollTabs('right')"><i class="ph ph-caret-right"></i></button>
-                <div class="h-6 w-[1px] bg-gray-300 mx-2"></div>
-                <button class="p-2 text-blue-600 hover:bg-blue-50 rounded flex items-center gap-1 text-sm font-medium mr-2 mb-1" onclick="addNewTagValue()">
-                    <i class="ph ph-plus"></i> 新增
-                </button>
-            </div>
-            <div class="flex-1 overflow-y-auto p-6 space-y-6" id="ruleConfigArea">
-                <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-4">
-                    <div class="grid grid-cols-1 gap-2">
-                        <label class="block text-sm font-bold text-gray-700"><span class="text-red-500 mr-1">*</span>标签值名称</label>
-                        <div class="relative w-full md:w-1/2">
-                            <input type="text" id="currentTagValueInput" class="w-full pl-3 pr-16 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" maxlength="50" oninput="updateCharCount(this, 'tagNameCount')" onblur="syncTabName(this)">
-                            <span id="tagNameCount" class="absolute right-3 top-2.5 text-xs text-gray-400">0/50</span>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 gap-2 relative">
-                        <label class="block text-sm font-bold text-gray-700">描述</label>
-                        <textarea class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none h-24" placeholder="可输入标签描述" maxlength="300" oninput="updateCharCount(this, 'tagDescCount')"></textarea>
-                        <span id="tagDescCount" class="absolute right-3 bottom-2 text-xs text-gray-400">0/300</span>
+        <div class="flex-1 overflow-y-auto p-6 space-y-6" id="ruleConfigArea">
+            <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-4">
+                <div class="grid grid-cols-1 gap-2">
+                    <label class="block text-sm font-bold text-gray-700"><span class="text-red-500 mr-1">*</span>标签值名称</label>
+                    <div class="relative w-full md:w-1/2">
+                        <input type="text" id="currentTagValueInput"
+                               class="w-full pl-3 pr-16 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                               maxlength="50" oninput="updateCharCount(this, 'tagNameCount')"
+                               onblur="syncTabName(this)">
+                        <span id="tagNameCount" class="absolute right-3 top-2.5 text-xs text-gray-400">0/50</span>
                     </div>
                 </div>
-                <div id="rulesContainer" class="space-y-8"></div>
+                <div class="grid grid-cols-1 gap-2 relative">
+                    <label class="block text-sm font-bold text-gray-700">描述</label>
+                    <textarea
+                            class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none h-24"
+                            placeholder="可输入标签描述" maxlength="300"
+                            oninput="updateCharCount(this, 'tagDescCount')"></textarea>
+                    <span id="tagDescCount" class="absolute right-3 bottom-2 text-xs text-gray-400">0/300</span>
+                </div>
             </div>
-            <div class="border-t border-gray-200 p-4 bg-white flex justify-center gap-4 flex-shrink-0">
-                <button onclick="goToStep1()" class="px-6 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded hover:bg-gray-50 transition">上一步</button>
-                <button class="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition shadow-sm">保存</button>
-                <button class="px-6 py-2 bg-blue-50 border border-blue-600 text-blue-700 text-sm font-medium rounded hover:bg-blue-100 transition">保存并发布</button>
-            </div>
+            <div id="rulesContainer" class="space-y-8"></div>
         </div>
-    </main>
-    <script>
-        const metaData = {
-            'invoice': { name: '票据事件数据', fields: { 'invoice_id': { label: '归集ID', type: 'string' }, 'total_amount': { label: '就诊总金额', type: 'number' }, 'hospital_name': { label: '医疗机构名称', type: 'string' }, 'is_insurance': { label: '医保结算', type: 'boolean' } } },
-            'detail': { name: '用户就诊明细事件表', fields: { 'item_name': { label: '项目名称', type: 'string' }, 'item_price': { label: '项目单价', type: 'number' }, 'item_qty': { label: '数量', type: 'number' } } }
-        };
-        const opConfig = { string: { aggs: ['总次数', '去重次数'], direct: ['等于', '不等于', '包含', '不包含', '为空', '不为空'] }, number: { aggs: ['求和', '平均值', '最大值', '最小值'], direct: ['=', '>', '>=', '<', '<=', '区间', '为空', '不为空'] }, boolean: { aggs: [], direct: ['为真', '为假', '为空', '不为空'] } };
-        let activeTabId = 1, tabCounter = 1, scrollToTabAfterRender = null, editingGroupId = null;
-        let tabsData = { 1: { id: 1, name: '标签值1', desc: '', satisfyGroups: [{ id: 101, name: '条件分组1', relation: 'AND', rules: [{ type: 'detail', obj: 'invoice', field: 'total_amount', op1: '求和', op2: '>', val: '', filters: [] }] }], satisfyRelation: 'AND', excludeGroups: [], excludeRelation: 'OR' } };
-        // --- 关键逻辑：单值/多值联动 ---
-        function toggleUpdateType(value) {
-            const container = document.getElementById('updateMethodContainer');
-            if (value === 'multi') {
-                container.classList.remove('hidden');
-            } else {
-                container.classList.add('hidden');
+        <div class="border-t border-gray-200 p-4 bg-white flex justify-center gap-4 flex-shrink-0">
+            <button onclick="goToStep1()"
+                    class="px-6 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded hover:bg-gray-50 transition">
+                上一步
+            </button>
+            <button class="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition shadow-sm">
+                保存
+            </button>
+            <button class="px-6 py-2 bg-blue-50 border border-blue-600 text-blue-700 text-sm font-medium rounded hover:bg-blue-100 transition">
+                保存并发布
+            </button>
+        </div>
+    </div>
+</main>
+<script>
+    const metaData = {
+        'invoice': {
+            name: '票据事件数据',
+            fields: {
+                'invoice_id': {label: '归集ID', type: 'string'},
+                'total_amount': {label: '就诊总金额', type: 'number'},
+                'hospital_name': {label: '医疗机构名称', type: 'string'},
+                'is_insurance': {label: '医保结算', type: 'boolean'}
+            }
+        },
+        'detail': {
+            name: '用户就诊明细事件表',
+            fields: {
+                'item_name': {label: '项目名称', type: 'string'},
+                'item_price': {label: '项目单价', type: 'number'},
+                'item_qty': {label: '数量', type: 'number'}
             }
         }
-        
-        function updateCharCount(input, targetId) { document.getElementById(targetId).textContent = `${input.value.length}/${input.getAttribute('maxlength')}`; }
-        function scrollTabs(direction) { const container = document.getElementById('tagValueTabsContainer'); if(direction === 'left') container.scrollLeft -= 200; else container.scrollLeft += 200; }
-        const directoryData = [{ id: 1, name: '用户属性', children: [{ id: 11, name: '基础信息' }, { id: 12, name: '会员等级' }] }, { id: 2, name: '行为偏好', children: [{ id: 21, name: '消费偏好' }] }, { id: 99, name: '未分类' }];
-        function updateRule(gid, ridx, key, val) { const grp = findGroup(gid); if (grp && grp.rules[ridx]) { grp.rules[ridx][key] = val; if(key === 'obj') { grp.rules[ridx].field = Object.keys(metaData[val].fields)[0]; grp.rules[ridx].op1 = '求和'; } renderRules(); } }
-        function startEditGroupName(gid) { editingGroupId = gid; renderRules(); }
-        function cancelEditGroupName(gid) { editingGroupId = null; renderRules(); }
-        function saveGroupName(gid) { const val = document.getElementById(`groupNameInput_${gid}`).value; const grp = findGroup(gid); if(grp && val) { grp.name = val; editingGroupId = null; renderRules(); } }
-        function renderTreeNodes(nodes, level=0) { let html = ''; nodes.forEach(node => { html += `<div class="tree-node indent-${level}" onclick="selectDir('${node.id}', '${node.name}')"><i class="ph-fill ph-folder text-yellow-400 mr-2"></i> ${node.name}</div>`; if(node.children) html += renderTreeNodes(node.children, level + 1); }); return html; }
-        document.getElementById('treeDropdown').innerHTML = renderTreeNodes(directoryData);
-        function toggleTreeDropdown() { document.getElementById('treeDropdown').style.display = document.getElementById('treeDropdown').style.display==='block'?'none':'block'; }
-        function selectDir(id, name) { document.getElementById('selectedDirName').textContent = name; document.getElementById('tagDir').value = id; document.getElementById('treeDropdown').style.display = 'none'; clearError('tagDir'); }
-        function clearError(id) { const el = document.getElementById(id); const msg = document.getElementById(id+'-error'); if(el) el.classList.remove('input-error'); if(msg) msg.classList.add('hidden'); }
-        function validateAndNext() { let valid = true; const name = document.getElementById('tagName'); if(!name.value.trim()){ name.classList.add('input-error'); document.getElementById('tagName-error').classList.remove('hidden'); valid=false; } if(valid) goToStep2(); }
-        function goToStep2() { document.getElementById('step1-content').classList.add('hidden'); document.getElementById('step2-content').classList.remove('hidden'); document.getElementById('step2-content').classList.add('flex'); document.getElementById('step1-icon').classList.replace('step-active', 'bg-blue-600'); document.getElementById('step1-icon').classList.add('text-white', 'border-blue-600'); document.getElementById('step2-icon').classList.replace('step-inactive', 'step-active'); renderTabs(); renderRules(); }
-        function goToStep1() { document.getElementById('step2-content').classList.add('hidden'); document.getElementById('step2-content').classList.remove('flex'); document.getElementById('step1-content').classList.remove('hidden'); }
-        function renderTabs() { const container = document.getElementById('tagValueTabsContainer'); container.innerHTML = ''; Object.values(tabsData).forEach(tab => { const isActive = tab.id == activeTabId; const div = document.createElement('div'); div.dataset.tabId = tab.id; div.className = `tab-item flex-shrink-0 group flex items-center justify-between px-4 py-3 cursor-pointer min-w-[140px] transition-all duration-200 ${isActive ? 'bg-white text-blue-600 font-semibold border-b-2 border-blue-500 -mb-px z-10' : 'text-gray-600 hover:bg-gray-50'}`; div.onclick = () => switchTab(tab.id); div.innerHTML = `<span class="text-sm font-medium truncate max-w-[100px]">${tab.name}</span> <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"> <button class="p-1 hover:text-blue-600" onclick="event.stopPropagation(); copyTagValue(event, ${tab.id})"><i class="ph ph-copy"></i></button> <button class="p-1 hover:text-red-500" onclick="event.stopPropagation(); removeTagValue(event, ${tab.id})"><i class="ph ph-trash"></i></button> </div>`; container.appendChild(div); }); const cur = tabsData[activeTabId]; if(cur) document.getElementById('currentTagValueInput').value = cur.name; if(scrollToTabAfterRender !== null) { setTimeout(() => { const target = container.querySelector(`[data-tab-id="${scrollToTabAfterRender}"]`); if(target) target.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'}); scrollToTabAfterRender = null; }, 0); } }
-        function switchTab(id) { activeTabId = id; renderTabs(); renderRules(); }
-        function syncTabName(input) { if(input.value.trim()){ tabsData[activeTabId].name = input.value; renderTabs(); } }
-        function addNewTagValue() { tabCounter++; const id = tabCounter; tabsData[id] = { id: id, name: `标签值${id}`, desc: '', satisfyGroups: [{id: Date.now(), relation:'AND', rules:[]}], satisfyRelation:'AND', excludeGroups:[], excludeRelation:'OR' }; scrollToTabAfterRender = id; switchTab(id); }
-        function copyTagValue(e, id) { e.stopPropagation(); tabCounter++; const nid=tabCounter; const src=tabsData[id]; tabsData[nid]=JSON.parse(JSON.stringify(src)); tabsData[nid].id=nid; tabsData[nid].name+='_copy'; scrollToTabAfterRender = id; switchTab(nid); }
-        function removeTagValue(e, id) { e.stopPropagation(); if(Object.keys(tabsData).length<=1) return; delete tabsData[id]; if(activeTabId==id) activeTabId=Object.keys(tabsData)[0]; renderTabs(); renderRules(); }
-        function renderRules() { const container = document.getElementById('rulesContainer'); const data = tabsData[activeTabId]; container.innerHTML = ''; container.innerHTML += renderConditionBlock('satisfy', data.satisfyGroups, data.satisfyRelation); container.innerHTML += renderConditionBlock('exclude', data.excludeGroups, data.excludeRelation); }
-        function renderConditionBlock(type, groups, relation) { const isSatisfy = type === 'satisfy'; const title = isSatisfy ? '满足条件' : '排除条件'; const themeColor = isSatisfy ? 'green' : 'red'; const borderColor = isSatisfy ? 'border-green-200' : 'border-red-200'; const bgHeader = isSatisfy ? 'bg-green-50' : 'bg-red-50'; let groupsHtml = ''; groups.forEach((group, idx) => { groupsHtml += renderGroup(group, type, idx, groups.length); }); const connectorHtml = groups.length > 1 ? `<div class="logic-rail"></div><button class="logic-connector-btn" style="top: 50%; border: none; background: transparent; padding: 4px 8px; font-size: 12px; cursor: pointer; color: #374151;" onclick="toggleBlockRelation('${type}', '${relation === 'AND' ? 'OR' : 'AND'}')">${relation === 'AND' ? '且' : '或'}</button>` : ''; return `<div class="border ${borderColor} rounded-lg overflow-hidden relative"> <div class="${bgHeader} px-4 py-3 border-b ${borderColor} flex items-center justify-between"> <div class="flex items-center gap-2"> <i class="ph-fill ${isSatisfy?'ph-check-circle':'ph-prohibit'} text-${themeColor}-600"></i> <span class="font-bold text-gray-800 text-sm">${title}</span> </div> </div> <div class="p-6 bg-white relative pl-12 space-y-6"> ${connectorHtml} ${groupsHtml} <button class="w-full py-2 border border-dashed border-gray-300 text-blue-600 text-sm rounded hover:bg-blue-50 flex items-center justify-center gap-1" onclick="addGroup('${type}')"> <i class="ph ph-plus"></i> 添加条件分组 </button> </div> </div>`; }
-        function renderGroup(group, type, index, total) { const isExclude = type === 'exclude'; const nameHtml = editingGroupId === group.id ? `<div class="flex items-center gap-1"> <input type="text" id="groupNameInput_${group.id}" value="${group.name}" class="border border-blue-300 rounded px-1 py-0.5 text-xs w-32 focus:outline-none" maxlength="30"> <button onclick="saveGroupName(${group.id})" class="text-green-600"><i class="ph-bold ph-check"></i></button> <button onclick="cancelEditGroupName(${group.id})" class="text-red-500"><i class="ph-bold ph-x"></i></button> </div>` : `<span class="text-sm font-bold text-gray-700 border-b border-dashed border-gray-300 cursor-pointer hover:text-blue-600" onclick="startEditGroupName(${group.id})">${group.name} <i class="ph-bold ph-pencil-simple text-xs text-gray-400"></i></span>`; const logicBtn = isExclude ? `<div class="absolute left-[-9px] top-1/2 -translate-y-1/2 logic-fixed-or text-[10px] px-1 rounded border background-color: #f2f2f2">或</div>` : `<button class="logic-connector-btn ${group.relation==='AND'?'active':''} !left-[-11px]" onclick="toggleGroupInnerRel(${group.id})">${group.relation==='AND'?'且':'或'}</button>`; let rulesHtml = ''; group.rules.forEach((rule, ri) => rulesHtml += renderRule(rule, group.id, ri, group.rules.length)); return `<div class="border border-gray-200 rounded-md p-4 relative hover:border-blue-400 transition-colors bg-gray-50/30 z-10"> <div class="flex justify-between items-center mb-3"> <div class="flex items-center gap-3">${nameHtml}</div> <button class="text-gray-400 hover:text-red-500" onclick="deleteGroup('${type}', ${group.id})"><i class="ph ph-trash"></i></button> </div> <div class="relative pl-8 space-y-3"> ${group.rules.length > 1 ? `<div class="absolute left-0 top-4 bottom-4 w-px bg-gray-300"></div>${logicBtn}` : ''} ${rulesHtml} </div> <div class="mt-3 flex gap-2 pl-8"> <button class="text-blue-600 text-xs hover:bg-blue-100 px-2 py-1 rounded border border-blue-200 bg-white" onclick="addRule(${group.id}, 'detail')">+ 添加明细数据</button> <button class="text-purple-600 text-xs hover:bg-purple-100 px-2 py-1 rounded border border-purple-200 bg-white" onclick="addRule(${group.id}, 'tag')">+ 添加标签</button> </div> </div>`; }
-        function renderRule(rule, gid, idx, total) { const isDetail = rule.type === 'detail'; let inputsHtml = ''; if (isDetail) { const objOptions = Object.keys(metaData).map(k => `<option value="${k}" ${rule.obj===k?'selected':''}>${metaData[k].name}</option>`).join(''); const currentObj = metaData[rule.obj] || metaData['invoice']; const fieldOptions = Object.keys(currentObj.fields).map(k => `<option value="${k}" ${rule.field===k?'selected':''}>${currentObj.fields[k].label}</option>`).join(''); const currentField = currentObj.fields[rule.field] || Object.values(currentObj.fields)[0]; const typeConfig = opConfig[currentField.type] || opConfig['string']; const ops = [...typeConfig.aggs, ...typeConfig.direct]; const op1Options = ops.map(o => `<option value="${o}" ${rule.op1===o?'selected':''}>${o}</option>`).join(''); const isAgg = typeConfig.aggs.includes(rule.op1); let op2Html = '', valHtml = ''; if (isAgg) { op2Html = `<select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 w-20" onchange="updateRule(${gid}, ${idx}, 'op2', this.value)"> <option value=">">大于</option><option value="<">小于</option><option value="=">等于</option> </select>`; valHtml = `<input type="number" class="border border-gray-300 rounded px-2 py-1 text-xs w-24 outline-none focus:border-blue-500" value="${rule.val}" oninput="updateRule(${gid}, ${idx}, 'val', this.value)">`; } else { valHtml = `<div class="relative inline-block"> <input type="text" class="border border-gray-300 rounded px-2 py-1 text-xs w-32 outline-none focus:border-blue-500" value="${rule.val??''}" oninput="updateRule(${gid}, ${idx}, 'val', this.value)"> </div>`; } inputsHtml = `<div class="flex items-center border border-gray-300 rounded px-2 py-1 bg-gray-50 text-xs text-gray-600 mr-2"><i class="ph ph-calendar mr-1"></i> 时间范围</div><select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 w-32" onchange="updateRule(${gid}, ${idx}, 'obj', this.value)">${objOptions}</select><select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 w-28" onchange="updateRule(${gid}, ${idx}, 'field', this.value)">${fieldOptions}</select><select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 w-24" onchange="updateRule(${gid}, ${idx}, 'op1', this.value)">${op1Options}</select>${op2Html}${valHtml}`; } else { inputsHtml = `<select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 w-40"><option>用户性别</option></select> <select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 w-20"><option>等于</option></select> <input type="text" class="border border-gray-300 rounded px-2 py-1 text-xs w-24 outline-none focus:border-blue-500">`; } let filtersHtml = ''; if (rule.filters && rule.filters.length > 0) { filtersHtml = `<div class="mt-2 pl-4 border-l-2 border-gray-200 space-y-2 relative"> ${rule.filters.length > 1 ? `<div class="absolute top-2 bottom-2 w-0.5 bg-gray-300"></div><button class="absolute left-[-10px] top-1/2 -translate-y-1/2 text-[10px] bg-white border border-gray-300 rounded px-1 text-gray-500" onclick="toggleFilterRel(${gid}, ${idx})">${rule.filterRel||'且'}</button>` : ''} ${rule.filters.map((f, fi) => `<div class="flex items-center gap-2 text-xs bg-gray-50 p-1.5 rounded border border-dashed border-gray-300"> <span class="text-blue-500 font-bold">筛选</span> <select class="border border-gray-300 rounded px-1 py-0.5"><option>科室名称</option></select> <select class="border border-gray-300 rounded px-1 py-0.5"><option>包含</option></select> <input type="text" class="border border-gray-300 rounded px-1 py-0.5 w-24" value="${f.val||''}"> <button class="text-red-400 hover:text-red-600 ml-auto" onclick="deleteFilter(${gid}, ${idx}, ${fi})"><i class="ph ph-x"></i></button> </div>`).join('')} </div>`; } return `<div class="relative flex items-start gap-2"> ${total > 1 ? '<div class="absolute left-[-32px] top-5 w-8 h-[1px] bg-gray-300"></div>' : ''} <div class="flex-1 bg-white p-3 rounded border border-gray-200 shadow-sm hover:border-blue-400 transition-colors"> <div class="flex items-center gap-2 flex-wrap"> <span class="text-xs px-1.5 py-0.5 rounded ${isDetail ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}">${isDetail ? '明细' : '标签'}</span> ${inputsHtml} <div class="ml-auto flex items-center gap-2"> ${isDetail ? `<button class="text-blue-600 text-xs hover:underline" onclick="addFilter(${gid}, ${idx})">+ 筛选</button>` : ''} <button class="text-gray-400 hover:text-red-500" onclick="deleteRule(${gid}, ${idx})"><i class="ph ph-trash"></i></button> </div> </div> ${filtersHtml} </div> </div>`; }
-        function toggleBlockRelation(type, rel) { const d = tabsData[activeTabId]; if(type==='satisfy') d.satisfyRelation=rel; else d.excludeRelation=rel; renderRules(); }
-        function toggleGroupInnerRel(gid) { const grp = findGroup(gid); if(grp) { grp.relation = grp.relation==='AND'?'OR':'AND'; renderRules(); } }
-        function addGroup(type) { const d = tabsData[activeTabId]; const arr = type==='satisfy'?d.satisfyGroups:d.excludeGroups; arr.push({id:Date.now(), name:`条件分组${arr.length+1}`, relation:'AND', rules:[{type:'detail', obj:'invoice', field:'total_amount', op1:'求和', op2:'>', val:''}]}); renderRules(); }
-        function deleteGroup(type, id) { const data = tabsData[activeTabId]; const arr = type === 'satisfy' ? data.satisfyGroups : data.excludeGroups; const idx = arr.findIndex(g => g.id === id); if(idx > -1) { arr.splice(idx, 1); renderRules(); } }
-        function addRule(gid, type) { const grp = findGroup(gid); if(grp) { grp.rules.push({ type: type, filters: [], filterRel: '且' }); renderRules(); } }
-        function deleteRule(gid, idx) { const grp = findGroup(gid); if(grp) { grp.rules.splice(idx, 1); renderRules(); } }
-        function addFilter(gid, ridx) { const grp = findGroup(gid); if(grp && grp.rules[ridx]) { if(!grp.rules[ridx].filters) grp.rules[ridx].filters=[]; grp.rules[ridx].filters.push({ val: '' }); renderRules(); } }
-        function deleteFilter(gid, ridx, fidx) { const grp = findGroup(gid); if(grp) { grp.rules[ridx].filters.splice(fidx, 1); renderRules(); } }
-        function toggleFilterRel(gid, ridx) { const grp = findGroup(gid); if(grp) { grp.rules[ridx].filterRel = grp.rules[ridx].filterRel==='且'?'或':'且'; renderRules(); } }
-        function findGroup(gid) { const d = tabsData[activeTabId]; return d.satisfyGroups.find(g=>g.id===gid) || d.excludeGroups.find(g=>g.id===gid); }
-        renderTabs(); renderRules();
-    </script>
+    };
+	// 新增：主体属性元数据
+    const attrData = {
+        'birthday': { label: '出生日期', type: 'date' },
+        'gender': { label: '性别', type: 'string' },
+        'city': { label: '常驻城市', type: 'string' },
+        'reg_time': { label: '注册时间', type: 'date' },
+        'level': { label: '会员等级', type: 'string' },
+        'balance': { label: '账户余额', type: 'number' }
+    };
+    const opConfig = {
+        string: {
+            aggs: ['总次数', '去重次数'],
+            direct: ['等于', '不等于', '包含', '不包含', '为空', '不为空']
+        },
+        number: {
+            aggs: ['求和', '平均值', '最大值', '最小值'],
+            direct: ['=', '>', '>=', '<', '<=', '区间', '为空', '不为空']
+        },
+        boolean: {aggs: [], direct: ['为真', '为假', '为空', '不为空']},
+		date: {aggs: [], direct: ['相对日期', '绝对绝对']}
+    };
+    let activeTabId = 1, tabCounter = 1, scrollToTabAfterRender = null, editingGroupId = null;
+    let tabsData = {
+        1: {
+            id: 1,
+            name: '标签值1',
+            desc: '',
+            satisfyGroups: [{
+                id: 101,
+                name: '条件分组1',
+                relation: 'AND',
+                rules: [{
+                    type: 'detail',
+                    obj: 'invoice',
+                    field: 'total_amount',
+                    op1: '求和',
+                    op2: '>',
+                    val: '',
+                    filters: []
+                }]
+            }],
+            satisfyRelation: 'AND',
+            excludeGroups: [],
+            excludeRelation: 'OR'
+        }
+    };
+
+    // --- 关键逻辑：单值/多值联动 ---
+    function toggleUpdateType(value) {
+        const container = document.getElementById('updateMethodContainer');
+        if (value === 'multi') {
+            container.classList.remove('hidden');
+        } else {
+            container.classList.add('hidden');
+        }
+    }
+
+    function updateCharCount(input, targetId) {
+        document.getElementById(targetId).textContent = `${input.value.length}/${input.getAttribute('maxlength')}`;
+    }
+
+    function scrollTabs(direction) {
+        const container = document.getElementById('tagValueTabsContainer');
+        if (direction === 'left') container.scrollLeft -= 200; else container.scrollLeft += 200;
+    }
+
+    const directoryData = [{
+        id: 1,
+        name: '用户属性',
+        children: [{id: 11, name: '基础信息'}, {id: 12, name: '会员等级'}]
+    }, {id: 2, name: '行为偏好', children: [{id: 21, name: '消费偏好'}]}, {id: 99, name: '未分类'}];
+
+    function updateRule(gid, ridx, key, val) {
+        const grp = findGroup(gid);
+        if (grp && grp.rules[ridx]) {
+            grp.rules[ridx][key] = val;
+
+            // 明细数据类型切换对象时，重置字段和聚合方式
+            if (grp.rules[ridx].type === 'detail' && key === 'obj') {
+                grp.rules[ridx].field = Object.keys(metaData[val].fields)[0];
+                grp.rules[ridx].op1 = '求和';
+            }
+
+            // 修改：主体属性切换字段时，如果类型变了(例如从文本变数字)，最好重置一下操作符
+            // 这里为了简化，仅重新渲染，让 renderRule 根据新字段类型生成默认操作符列表
+            if (grp.rules[ridx].type === 'attr' && key === 'field') {
+                // 可选：切换字段时清空值
+                grp.rules[ridx].val = '';
+                // 操作符 op 会在渲染时根据新的字段类型自动校正下拉框，但最好重置为默认
+                const newFieldType = attrData[val].type;
+                const newOps = opConfig[newFieldType].direct;
+                grp.rules[ridx].op = newOps[0];
+            }
+
+            renderRules();
+        }
+    }
+
+    function startEditGroupName(gid) {
+        editingGroupId = gid;
+        renderRules();
+    }
+
+    function cancelEditGroupName(gid) {
+        editingGroupId = null;
+        renderRules();
+    }
+
+    function saveGroupName(gid) {
+        const val = document.getElementById(`groupNameInput_${gid}`).value;
+        const grp = findGroup(gid);
+        if (grp && val) {
+            grp.name = val;
+            editingGroupId = null;
+            renderRules();
+        }
+    }
+
+    function renderTreeNodes(nodes, level = 0) {
+        let html = '';
+        nodes.forEach(node => {
+            html += `<div class="tree-node indent-${level}" onclick="selectDir('${node.id}', '${node.name}')"><i class="ph-fill ph-folder text-yellow-400 mr-2"></i> ${node.name}</div>`;
+            if (node.children) html += renderTreeNodes(node.children, level + 1);
+        });
+        return html;
+    }
+
+    document.getElementById('treeDropdown').innerHTML = renderTreeNodes(directoryData);
+
+    function toggleTreeDropdown() {
+        document.getElementById('treeDropdown').style.display = document.getElementById('treeDropdown').style.display === 'block' ? 'none' : 'block';
+    }
+
+    function selectDir(id, name) {
+        document.getElementById('selectedDirName').textContent = name;
+        document.getElementById('tagDir').value = id;
+        document.getElementById('treeDropdown').style.display = 'none';
+        clearError('tagDir');
+    }
+
+    function clearError(id) {
+        const el = document.getElementById(id);
+        const msg = document.getElementById(id + '-error');
+        if (el) el.classList.remove('input-error');
+        if (msg) msg.classList.add('hidden');
+    }
+
+    function validateAndNext() {
+        let valid = true;
+        const name = document.getElementById('tagName');
+        if (!name.value.trim()) {
+            name.classList.add('input-error');
+            document.getElementById('tagName-error').classList.remove('hidden');
+            valid = false;
+        }
+        if (valid) goToStep2();
+    }
+
+    function goToStep2() {
+        document.getElementById('step1-content').classList.add('hidden');
+        document.getElementById('step2-content').classList.remove('hidden');
+        document.getElementById('step2-content').classList.add('flex');
+        document.getElementById('step1-icon').classList.replace('step-active', 'bg-blue-600');
+        document.getElementById('step1-icon').classList.add('text-white', 'border-blue-600');
+        document.getElementById('step2-icon').classList.replace('step-inactive', 'step-active');
+        renderTabs();
+        renderRules();
+    }
+
+    function goToStep1() {
+        document.getElementById('step2-content').classList.add('hidden');
+        document.getElementById('step2-content').classList.remove('flex');
+        document.getElementById('step1-content').classList.remove('hidden');
+    }
+
+    function renderTabs() {
+        const container = document.getElementById('tagValueTabsContainer');
+        container.innerHTML = '';
+        Object.values(tabsData).forEach(tab => {
+            const isActive = tab.id == activeTabId;
+            const div = document.createElement('div');
+            div.dataset.tabId = tab.id;
+            div.className = `tab-item flex-shrink-0 group flex items-center justify-between px-4 py-3 cursor-pointer min-w-[140px] transition-all duration-200 ${isActive ? 'bg-white text-blue-600 font-semibold border-b-2 border-blue-500 -mb-px z-10' : 'text-gray-600 hover:bg-gray-50'}`;
+            div.onclick = () => switchTab(tab.id);
+            div.innerHTML = `<span class="text-sm font-medium truncate max-w-[100px]">${tab.name}</span> <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"> <button class="p-1 hover:text-blue-600" onclick="event.stopPropagation(); copyTagValue(event, ${tab.id})"><i class="ph ph-copy"></i></button> <button class="p-1 hover:text-red-500" onclick="event.stopPropagation(); removeTagValue(event, ${tab.id})"><i class="ph ph-trash"></i></button> </div>`;
+            container.appendChild(div);
+        });
+        const cur = tabsData[activeTabId];
+        if (cur) document.getElementById('currentTagValueInput').value = cur.name;
+        if (scrollToTabAfterRender !== null) {
+            setTimeout(() => {
+                const target = container.querySelector(`[data-tab-id="${scrollToTabAfterRender}"]`);
+                if (target) target.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'center'});
+                scrollToTabAfterRender = null;
+            }, 0);
+        }
+    }
+
+    function switchTab(id) {
+        activeTabId = id;
+        renderTabs();
+        renderRules();
+    }
+
+    function syncTabName(input) {
+        if (input.value.trim()) {
+            tabsData[activeTabId].name = input.value;
+            renderTabs();
+        }
+    }
+
+    function addNewTagValue() {
+        tabCounter++;
+        const id = tabCounter;
+        tabsData[id] = {
+            id: id,
+            name: `标签值${id}`,
+            desc: '',
+            satisfyGroups: [{id: Date.now(), relation: 'AND', rules: []}],
+            satisfyRelation: 'AND',
+            excludeGroups: [],
+            excludeRelation: 'OR'
+        };
+        scrollToTabAfterRender = id;
+        switchTab(id);
+    }
+
+    function copyTagValue(e, id) {
+        e.stopPropagation();
+        tabCounter++;
+        const nid = tabCounter;
+        const src = tabsData[id];
+        tabsData[nid] = JSON.parse(JSON.stringify(src));
+        tabsData[nid].id = nid;
+        tabsData[nid].name += '_copy';
+        scrollToTabAfterRender = id;
+        switchTab(nid);
+    }
+
+    function removeTagValue(e, id) {
+        e.stopPropagation();
+        if (Object.keys(tabsData).length <= 1) return;
+        delete tabsData[id];
+        if (activeTabId == id) activeTabId = Object.keys(tabsData)[0];
+        renderTabs();
+        renderRules();
+    }
+
+    function renderRules() {
+        const container = document.getElementById('rulesContainer');
+        const data = tabsData[activeTabId];
+        container.innerHTML = '';
+        container.innerHTML += renderConditionBlock('satisfy', data.satisfyGroups, data.satisfyRelation);
+        container.innerHTML += renderConditionBlock('exclude', data.excludeGroups, data.excludeRelation);
+    }
+
+    function renderConditionBlock(type, groups, relation) {
+        const isSatisfy = type === 'satisfy';
+        const title = isSatisfy ? '满足条件' : '排除条件';
+        const themeColor = isSatisfy ? 'green' : 'red';
+        const borderColor = isSatisfy ? 'border-green-200' : 'border-red-200';
+        const bgHeader = isSatisfy ? 'bg-green-50' : 'bg-red-50';
+        let groupsHtml = '';
+        groups.forEach((group, idx) => {
+            groupsHtml += renderGroup(group, type, idx, groups.length);
+        });
+        const connectorHtml = groups.length > 1 ? `<div class="logic-rail"></div><button class="logic-connector-btn" style="top: 50%; border: none; background: transparent; padding: 4px 8px; font-size: 12px; cursor: pointer; color: #374151;" onclick="toggleBlockRelation('${type}', '${relation === 'AND' ? 'OR' : 'AND'}')">${relation === 'AND' ? '且' : '或'}</button>` : '';
+        return `<div class="border ${borderColor} rounded-lg overflow-hidden relative"> <div class="${bgHeader} px-4 py-3 border-b ${borderColor} flex items-center justify-between"> <div class="flex items-center gap-2"> <i class="ph-fill ${isSatisfy ? 'ph-check-circle' : 'ph-prohibit'} text-${themeColor}-600"></i> <span class="font-bold text-gray-800 text-sm">${title}</span> </div> </div> <div class="p-6 bg-white relative pl-12 space-y-6"> ${connectorHtml} ${groupsHtml} <button class="w-full py-2 border border-dashed border-gray-300 text-blue-600 text-sm rounded hover:bg-blue-50 flex items-center justify-center gap-1" onclick="addGroup('${type}')"> <i class="ph ph-plus"></i> 添加条件分组 </button> </div> </div>`;
+    }
+
+    function renderGroup(group, type, index, total) {
+        const isExclude = type === 'exclude';
+        const nameHtml = editingGroupId === group.id ? `<div class="flex items-center gap-1"> <input type="text" id="groupNameInput_${group.id}" value="${group.name}" class="border border-blue-300 rounded px-1 py-0.5 text-xs w-32 focus:outline-none" maxlength="30"> <button onclick="saveGroupName(${group.id})" class="text-green-600"><i class="ph-bold ph-check"></i></button> <button onclick="cancelEditGroupName(${group.id})" class="text-red-500"><i class="ph-bold ph-x"></i></button> </div>` : `<span class="text-sm font-bold text-gray-700 border-b border-dashed border-gray-300 cursor-pointer hover:text-blue-600" onclick="startEditGroupName(${group.id})">${group.name} <i class="ph-bold ph-pencil-simple text-xs text-gray-400"></i></span>`;
+        const logicBtn = isExclude ? `<div class="absolute left-[-9px] top-1/2 -translate-y-1/2 logic-fixed-or text-[10px] px-1 rounded border background-color: #f2f2f2">或</div>` : `<button class="logic-connector-btn ${group.relation === 'AND' ? 'active' : ''} !left-[-11px]" onclick="toggleGroupInnerRel(${group.id})">${group.relation === 'AND' ? '且' : '或'}</button>`;
+        let rulesHtml = '';
+        group.rules.forEach((rule, ri) => rulesHtml += renderRule(rule, group.id, ri, group.rules.length));
+        //return `<div class="border border-gray-200 rounded-md p-4 relative hover:border-blue-400 transition-colors bg-gray-50/30 z-10"> <div class="flex justify-between items-center mb-3"> <div class="flex items-center gap-3">${nameHtml}</div> <button class="text-gray-400 hover:text-red-500" onclick="deleteGroup('${type}', ${group.id})"><i class="ph ph-trash"></i></button> </div> <div class="relative pl-8 space-y-3"> ${group.rules.length > 1 ? `<div class="absolute left-0 top-4 bottom-4 w-px bg-gray-300"></div>${logicBtn}` : ''} ${rulesHtml} </div> <div class="mt-3 flex gap-2 pl-8"> <button class="text-blue-600 text-xs hover:bg-blue-100 px-2 py-1 rounded border border-blue-200 bg-white" onclick="addRule(${group.id}, 'detail')">+ 添加明细数据</button> <button class="text-purple-600 text-xs hover:bg-purple-100 px-2 py-1 rounded border border-purple-200 bg-white" onclick="addRule(${group.id}, 'tag')">+ 添加标签</button> </div> </div>`;
+		return `
+            <div class="border border-gray-200 rounded-md p-4 relative hover:border-blue-400 transition-colors bg-gray-50/30 z-10">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="flex items-center gap-3">${nameHtml}</div>
+                    <button class="text-gray-400 hover:text-red-500" onclick="deleteGroup('${type}', ${group.id})"><i class="ph ph-trash"></i></button>
+                </div>
+                <div class="relative pl-8 space-y-3">
+                    ${group.rules.length > 1 ? `<div class="absolute left-0 top-4 bottom-4 w-px bg-gray-300"></div>${logicBtn}` : ''}
+                    ${rulesHtml}
+                </div>
+                <div class="mt-3 flex gap-2 pl-8">
+                    <button class="text-blue-600 text-xs hover:bg-blue-100 px-2 py-1.5 rounded border border-blue-200 bg-white shadow-sm" onclick="addRule(${group.id}, 'detail')">+ 添加明细数据</button>
+                    <button class="text-orange-600 text-xs hover:bg-orange-100 px-2 py-1.5 rounded border border-orange-200 bg-white shadow-sm" onclick="addRule(${group.id}, 'attr')">+ 添加主体属性</button>
+                    <button class="text-purple-600 text-xs hover:bg-purple-100 px-2 py-1.5 rounded border border-purple-200 bg-white shadow-sm" onclick="addRule(${group.id}, 'tag')">+ 添加标签</button>
+                </div>
+            </div>`;
+    }
+
+    function renderRule(rule, gid, idx, total) {
+        const isDetail = rule.type === 'detail';
+		const isAttr = rule.type === 'attr';
+        const isTag = rule.type === 'tag';
+
+        let labelClass = 'bg-purple-100 text-purple-700';
+        let labelText = '标签';
+        if (isDetail) {
+            labelClass = 'bg-blue-100 text-blue-700';
+            labelText = '明细';
+        }
+        if (isAttr) {
+            labelClass = 'bg-orange-100 text-orange-700';
+            labelText = '主体属性';
+        }
+        let inputsHtml = '';
+        if (isDetail) {
+            const objOptions = Object.keys(metaData).map(k => `<option value="${k}" ${rule.obj === k ? 'selected' : ''}>${metaData[k].name}</option>`).join('');
+            const currentObj = metaData[rule.obj] || metaData['invoice'];
+            const fieldOptions = Object.keys(currentObj.fields).map(k => `<option value="${k}" ${rule.field === k ? 'selected' : ''}>${currentObj.fields[k].label}</option>`).join('');
+            const currentField = currentObj.fields[rule.field] || Object.values(currentObj.fields)[0];
+            const typeConfig = opConfig[currentField.type] || opConfig['string'];
+            const ops = [...typeConfig.aggs, ...typeConfig.direct];
+            const op1Options = ops.map(o => `<option value="${o}" ${rule.op1 === o ? 'selected' : ''}>${o}</option>`).join('');
+            const isAgg = typeConfig.aggs.includes(rule.op1);
+            let op2Html = '', valHtml = '';
+            if (isAgg) {
+                op2Html = `<select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 w-20" onchange="updateRule(${gid}, ${idx}, 'op2', this.value)"> <option value=">">大于</option><option value="<">小于</option><option value="=">等于</option> </select>`;
+                valHtml = `<input type="number" class="border border-gray-300 rounded px-2 py-1 text-xs w-24 outline-none focus:border-blue-500" value="${rule.val}" oninput="updateRule(${gid}, ${idx}, 'val', this.value)">`;
+            } else {
+                valHtml = `<div class="relative inline-block"> <input type="text" class="border border-gray-300 rounded px-2 py-1 text-xs w-32 outline-none focus:border-blue-500" value="${rule.val ?? ''}" oninput="updateRule(${gid}, ${idx}, 'val', this.value)"> </div>`;
+            }
+            //inputsHtml = `<div class="flex items-center border border-gray-300 rounded px-2 py-1 bg-gray-50 text-xs text-gray-600 mr-2"><i class="ph ph-calendar mr-1"></i> 时间范围</div><select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 w-32" onchange="updateRule(${gid}, ${idx}, 'obj', this.value)">${objOptions}</select><select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 w-28" onchange="updateRule(${gid}, ${idx}, 'field', this.value)">${fieldOptions}</select><select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 w-24" onchange="updateRule(${gid}, ${idx}, 'op1', this.value)">${op1Options}</select>${op2Html}${valHtml}`;
+			inputsHtml = `<div class="flex items-center border border-gray-300 rounded px-2 py-1 bg-gray-50 text-xs text-gray-600 mr-2"><i class="ph ph-calendar mr-1"></i> 时间范围</div>
+                          <select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 w-32" onchange="updateRule(${gid}, ${idx}, 'obj', this.value)">${objOptions}</select>
+                          <select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 w-28" onchange="updateRule(${gid}, ${idx}, 'field', this.value)">${fieldOptions}</select>
+                          <select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 w-24" onchange="updateRule(${gid}, ${idx}, 'op1', this.value)">${op1Options}</select>${op2Html}${valHtml}`;
+        } else if (isAttr) {
+            // 主体属性渲染逻辑
+            // 1. 生成字段选项 (直接遍历 attrData)
+            const fieldOptions = Object.keys(attrData).map(k =>
+                `<option value="${k}" ${rule.field === k ? 'selected' : ''}>${attrData[k].label}</option>`
+            ).join('');
+
+            // 2. 获取当前选中字段的配置
+            const currentField = attrData[rule.field] || Object.values(attrData)[0];
+
+            // 3. 根据字段类型获取操作符
+            const typeConfig = opConfig[currentField.type] || opConfig['string'];
+            const opOptions = typeConfig.direct.map(o =>
+                `<option value="${o}" ${rule.op === o ? 'selected' : ''}>${o}</option>`
+            ).join('');
+
+            // 4. 输入框
+            const valHtml = `<input type="text" class="border border-gray-300 rounded px-2 py-1 text-xs w-32 outline-none focus:border-blue-500" value="${rule.val || ''}" oninput="updateRule(${gid}, ${idx}, 'val', this.value)">`;
+
+            // 5. 组合 HTML (去掉了之前的 cat select)
+            inputsHtml = `
+                <select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 w-32" onchange="updateRule(${gid}, ${idx}, 'field', this.value)">${fieldOptions}</select>
+                <select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 w-20" onchange="updateRule(${gid}, ${idx}, 'op', this.value)">${opOptions}</select>
+                ${valHtml}
+            `;
+        } else {
+            inputsHtml = `<select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 w-40"><option>用户性别</option><option>就医环境</option></select> <select class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 w-20"><option>等于</option></select> <input type="text" class="border border-gray-300 rounded px-2 py-1 text-xs w-24 outline-none focus:border-blue-500">`;
+        }
+        let filtersHtml = '';
+        if (rule.filters && rule.filters.length > 0) {
+            filtersHtml = `<div class="mt-2 pl-4 border-l-2 border-gray-200 space-y-2 relative"> ${rule.filters.length > 1 ? `<button class="absolute left-[-10px] top-1/2 -translate-y-1/2 text-[10px] bg-white border border-gray-300 rounded px-1 text-gray-500" onclick="toggleFilterRel(${gid}, ${idx})">${rule.filterRel || '且'}</button>` : ''} ${rule.filters.map((f, fi) => `<div class="flex items-center gap-2 text-xs bg-gray-50 p-1.5 rounded border border-dashed border-gray-300"> <span class="text-blue-500 font-bold">筛选</span> <select class="border border-gray-300 rounded px-1 py-0.5"><option>科室名称</option></select> <select class="border border-gray-300 rounded px-1 py-0.5"><option>包含</option></select> <input type="text" class="border border-gray-300 rounded px-1 py-0.5 w-24" value="${f.val || ''}"> <button class="text-red-400 hover:text-red-600 ml-auto" onclick="deleteFilter(${gid}, ${idx}, ${fi})"><i class="ph ph-x"></i></button> </div>`).join('')} </div>`;
+        }
+        //return `<div class="relative flex items-start gap-2"> ${total > 1 ? '<div class="absolute left-[-32px] top-5 w-8 h-[1px] bg-gray-300"></div>' : ''} <div class="flex-1 bg-white p-3 rounded border border-gray-200 shadow-sm hover:border-blue-400 transition-colors"> <div class="flex items-center gap-2 flex-wrap"> <span class="text-xs px-1.5 py-0.5 rounded ${isDetail ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}">${isDetail ? '明细' : '标签'}</span> ${inputsHtml} <div class="ml-auto flex items-center gap-2"> ${isDetail ? `<button class="text-blue-600 text-xs hover:underline" onclick="addFilter(${gid}, ${idx})">+ 筛选</button>` : ''} <button class="text-gray-400 hover:text-red-500" onclick="deleteRule(${gid}, ${idx})"><i class="ph ph-trash"></i></button> </div> </div> ${filtersHtml} </div> </div>`;
+		return `<div class="relative flex items-start gap-2"> ${total > 1 ? '<div class="absolute left-[-32px] top-5 w-8 h-[1px] bg-gray-300"></div>' : ''} <div class="flex-1 bg-white p-3 rounded border border-gray-200 shadow-sm hover:border-blue-400 transition-colors"> <div class="flex items-center gap-2 flex-wrap"> <span class="text-xs px-1.5 py-0.5 rounded ${labelClass}">${labelText}</span> ${inputsHtml} <div class="ml-auto flex items-center gap-2"> ${isDetail ? `<button class="text-blue-600 text-xs hover:underline" onclick="addFilter(${gid}, ${idx})">+ 筛选</button>` : ''} <button class="text-gray-400 hover:text-red-500" onclick="deleteRule(${gid}, ${idx})"><i class="ph ph-trash"></i></button> </div> </div> ${filtersHtml} </div> </div>`;
+
+    }
+
+    function toggleBlockRelation(type, rel) {
+        const d = tabsData[activeTabId];
+        if (type === 'satisfy') d.satisfyRelation = rel; else d.excludeRelation = rel;
+        renderRules();
+    }
+
+    function toggleGroupInnerRel(gid) {
+        const grp = findGroup(gid);
+        if (grp) {
+            grp.relation = grp.relation === 'AND' ? 'OR' : 'AND';
+            renderRules();
+        }
+    }
+
+    function addGroup(type) {
+        const d = tabsData[activeTabId];
+        const arr = type === 'satisfy' ? d.satisfyGroups : d.excludeGroups;
+        arr.push({
+            id: Date.now(),
+            name: `条件分组${arr.length + 1}`,
+            relation: 'AND',
+            rules: [{type: 'detail', obj: 'invoice', field: 'total_amount', op1: '求和', op2: '>', val: ''}]
+        });
+        renderRules();
+    }
+
+    function deleteGroup(type, id) {
+        const data = tabsData[activeTabId];
+        const arr = type === 'satisfy' ? data.satisfyGroups : data.excludeGroups;
+        const idx = arr.findIndex(g => g.id === id);
+        if (idx > -1) {
+            arr.splice(idx, 1);
+            renderRules();
+        }
+    }
+
+    function addRule(gid, type) {
+        const grp = findGroup(gid);
+        if (grp) {
+            let newRule = {};
+            if (type === 'detail') {
+                newRule = {type: 'detail', obj: 'invoice', field: 'total_amount', op1: '求和', op2: '>', val: '', filters: [], filterRel: '且'};
+            } else if (type === 'attr') {
+                // 修改：去掉 cat 属性，默认选中第一个字段
+                const firstFieldKey = Object.keys(attrData)[0];
+                const firstFieldType = attrData[firstFieldKey].type;
+                const defaultOp = opConfig[firstFieldType].direct[0];
+                newRule = {type: 'attr', field: firstFieldKey, op: defaultOp, val: ''};
+            } else {
+                newRule = {type: 'tag', filters: [], filterRel: '且'};
+            }
+            grp.rules.push(newRule);
+            renderRules();
+        }
+    }
+
+    function deleteRule(gid, idx) {
+        const grp = findGroup(gid);
+        if (grp) {
+            grp.rules.splice(idx, 1);
+            renderRules();
+        }
+    }
+
+    function addFilter(gid, ridx) {
+        const grp = findGroup(gid);
+        if (grp && grp.rules[ridx]) {
+            if (!grp.rules[ridx].filters) grp.rules[ridx].filters = [];
+            grp.rules[ridx].filters.push({val: ''});
+            renderRules();
+        }
+    }
+
+    function deleteFilter(gid, ridx, fidx) {
+        const grp = findGroup(gid);
+        if (grp) {
+            grp.rules[ridx].filters.splice(fidx, 1);
+            renderRules();
+        }
+    }
+
+    function toggleFilterRel(gid, ridx) {
+        const grp = findGroup(gid);
+        if (grp) {
+            grp.rules[ridx].filterRel = grp.rules[ridx].filterRel === '且' ? '或' : '且';
+            renderRules();
+        }
+    }
+
+    function findGroup(gid) {
+        const d = tabsData[activeTabId];
+        return d.satisfyGroups.find(g => g.id === gid) || d.excludeGroups.find(g => g.id === gid);
+    }
+
+    renderTabs();
+    renderRules();
+</script>
 </body>
 </html>
